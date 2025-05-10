@@ -4,8 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 cg = pycoingecko.CoinGeckoAPI()
 
 # Цена монет
-price = cg.get_price(ids='bitcoin', vs_currencies='usd')
-
+price = cg.get_price(ids='XRP', vs_currencies='usd')
+print(price)
 app = Flask(__name__)
 
 @app.route('/')

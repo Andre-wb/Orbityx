@@ -1,2 +1,4 @@
 Flask==2.3.2
 pycoingecko==3.2.0
+dotenv==0.9.9
+flask_migrate==4.1.0
