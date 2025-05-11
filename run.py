@@ -1,16 +1,9 @@
-import pycoingecko
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from app import create_app, db
 
-cg = pycoingecko.CoinGeckoAPI()
+app = create_app()
 
-# Цена монет
-price = cg.get_price(ids='XRP', vs_currencies='usd')
-print(price)
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return f'Цена биткоина {price['bitcoin']['usd']} USD'
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
