@@ -16,7 +16,7 @@ body {
 }
 header {
     background: transparent;
-    border-bottom: 1px solid rgb(38,40,54);
+    border-bottom: 1px solid rgb(55, 58, 78);
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
@@ -86,3 +86,10 @@ main {
     justify-content: center;
     align-items: center;
 }
+.currency_table {
+    width: 90vw;
+}
+.currency_table thead {
+    /*border-bottom: 1px solid var(--); */
+}
+

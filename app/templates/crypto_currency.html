@@ -1,5 +1,39 @@
 {% extends 'base.html' %}
 {% block title %}Актуальный рейтинг криптовалют на Orbityx{% endblock %}
 {% block content %}
-<h1>привет</h1>
+
+<h1 class="">Все криптовалюты</h1>
+
+<table class="currency_table">
+    <thead class="">
+    <tr>
+        <th class="">#</th>
+        <th class="">Название</th>
+        <th class="">Цена</th>
+        <th class="">% 24ч</th>
+        <th class="">Рын. кап.</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for coin in coins %}
+    <tr class="">
+        <td class="">{{ loop.index }}</td>
+        <td class="">
+            <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
+            {{ coin.name }} ({{ coin.symbol|upper }})
+        </td>
+        <td class="p-2">${{ coin.current_price }}</td>
+        <td class="p-2">
+            {% if coin.price_change_percentage_24h >= 0 %}
+            <span class="">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
+            {% else %}
+            <span class="">{{ coin.price_change_percentage_24h | round(2) }}%</span>
+            {% endif %}
+        </td>
+        <td class="p-2">${{ "{:,}".format(coin.market_cap | int) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}
