@@ -1,25 +1,25 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort, send_file
-from app import db
 from flask_login import login_user, logout_user, login_required, current_user
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from io import BytesIO
-import re, logging, qrcode, smtplib, os
-from datetime import datetime, date
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from app.models import User
-from .config import Config
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, validators
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from app import db
+from app.models import User
+from .config import Config
 from pycoingecko import CoinGeckoAPI
+from io import BytesIO
+import re, logging, smtplib, os
+from datetime import datetime, date
 
-#SETUP
+# SETUP
 main = Blueprint('main', __name__)
 cg = CoinGeckoAPI()
 logger = logging.getLogger(__name__)
+serializer = URLSafeTimedSerializer(Config.SECRET_KEY)
 
-
-
+# ROUTES
 @main.route('/')
 def introduce_page():
     return render_template('introduce.html')
@@ -33,16 +33,14 @@ def crypto_currency_page():
     coins = cg.get_coins_markets(vs_currency='usd', order='market_cap_desc', per_page=50, page=1)
     return render_template('crypto_currency.html', coins=coins)
 
-
-#Формы
-
+# FORMS
 class LoginForm(FlaskForm):
     credential = StringField('Email/Phone/Username', validators=[validators.DataRequired()])
-    password   = PasswordField('Пароль',     validators=[validators.DataRequired()])
+    password   = PasswordField('Пароль', validators=[validators.DataRequired()])
     submit     = SubmitField('Войти')
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username',[validators.Length(min=3, max=20), validators.InputRequired()])
+    username = StringField('Username', [validators.Length(min=3, max=20), validators.InputRequired()])
     email = StringField('Email', [validators.Length(min=2, max=250), validators.InputRequired()])
     phone = StringField('Phone', [validators.Length(min=10, max=15), validators.InputRequired(), validators.Regexp(r'^\+?[1-9]\d{7,14}$', message="Некорректный формат телефона")])
     password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=8, max=200)])
@@ -54,8 +52,7 @@ class RegistrationForm(FlaskForm):
             raise validators.ValidationError("Некорректный формат телефона")
         field.data = normalized
 
-
-#Helpers
+# HELPERS
 def generate_confirmation_token(email):
     return serializer.dumps(email, salt="email-confirm")
 
@@ -67,30 +64,30 @@ def confirm_token(token, expiration=3600):
 
 def send_confirmation_email(token, email):
     msg = MIMEMultipart()
-    msg['from'] = Config.SMTP_USERNAME
-    msg['to'] = user_email
+    msg['From'] = Config.SMTP_USERNAME
+    msg['To'] = email
     msg['Subject'] = "Подтвердите ваш email"
 
     host_url = request.host_url
-    confirm_url = confirm_url = f"{host_url}confirm-email/{token}"
+    confirm_url = f"{host_url}confirm-email/{token}"
 
     print(f"[DEBUG] Confirmation URL = {confirm_url}", flush=True)
 
     html_content = f"""
     <html>
     <body>
-        <p>Здравствуйте! это компания Orbityx по анализу криптовалют.
-        Чтобы подтвердить ваш Email нажмите на кнопку ниже:</p> 
+        <p>Здравствуйте! Это компания Orbityx по анализу криптовалют.</p>
+        <p>Чтобы подтвердить ваш Email, нажмите на ссылку ниже:</p> 
         <p><a href="{confirm_url}">{confirm_url}</a></p>
-              <p>Если вы не регистрировались, проигнорируйте это письмо.</p>
-              <p>Также мы просим вас если вы нашли это письмо в отделе Spam пожалуйста сообщите об том что это не спам, нажав на три точке в правом верхнем углу</p>
+        <p>Если вы не регистрировались, проигнорируйте это письмо.</p>
+        <p>Если вы нашли письмо в спаме — отметьте его как "Не спам".</p>
     </body>
     </html>
     """
     msg.attach(MIMEText(html_content, 'html'))
 
     try:
-        with smtplib.SMTP(Config.SMTP_USERNAME, Config.SMTP_PASSWORD) as server:
+        with smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT) as server:
             server.starttls()
             server.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
             server.send_message(msg)
@@ -99,8 +96,7 @@ def send_confirmation_email(token, email):
         logger.error(f"Ошибка отправки email: {e}")
         return False
 
-    #ROUTES
-
+# REGISTRATION
 @main.route('/register', methods=['GET', 'POST'])
 def register_user():
     form = RegistrationForm()
@@ -121,13 +117,14 @@ def register_user():
         db.session.commit()
 
         token = generate_confirmation_token(user.email)
-        if send_confirmation_email(user.email, token):
+        if send_confirmation_email(token, user.email):
             flash('Письмо для подтверждения отправлено на вашу почту.', 'info')
         else:
             flash('Ошибка при отправке письма.', 'error')
         return redirect(url_for('main.login'))
     return render_template('register.html', form=form)
 
+# CONFIRM EMAIL
 @main.route('/confirm-email/<token>')
 def confirm_email(token):
     email = confirm_token(token)
@@ -141,6 +138,7 @@ def confirm_email(token):
         flash('Email подтверждён', 'success')
     return redirect(url_for('main.login'))
 
+# LOGIN
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -163,15 +161,15 @@ def login():
             flash('Неверные учетные данные', 'error')
     return render_template('login.html', form=form)
 
+# LOGOUT
 @main.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
+# PROFILE
 @main.route('/profile')
 @login_required
 def profile():
-    import os
-    print("Current directory: ", os.getcwd())
-    print("Templates Exist:", os.path.exists(os.path.join(os.getcwd(), "templates", "profile.html")))
     return render_template('profile.html', user=current_user)

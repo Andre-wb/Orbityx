@@ -9,13 +9,16 @@ class User(UserMixin, db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     username      = db.Column(db.String(100), unique=True, nullable=False)
     email         = db.Column(db.String(100), unique=True, nullable=False)
-    phone         = db.Column(db.String(20), unique=True, nullable=False)
+    phone         = db.Column(db.String(20), nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
     confirmed     = db.Column(db.Boolean, default=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('phone', name='uq_user_phone'),
+    )
 
     def set_password(self, pw):
         self.password_hash = pw
 
     def check_password(self, pw):
         return check_password_hash(self.password_hash, pw)
-
