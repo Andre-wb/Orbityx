@@ -12,8 +12,10 @@ from pycoingecko import CoinGeckoAPI
 from io import BytesIO
 import re, logging, smtplib, os
 from datetime import datetime, date
+from flask_mail import Mail
 
 # SETUP
+mail = Mail()
 main = Blueprint('main', __name__)
 cg = CoinGeckoAPI()
 logger = logging.getLogger(__name__)
@@ -64,7 +66,7 @@ def confirm_token(token, expiration=3600):
 
 def send_confirmation_email(token, email):
     msg = MIMEMultipart()
-    msg['From'] = Config.SMTP_USERNAME
+    msg['From'] = Config.MAIL_USERNAME
     msg['To'] = email
     msg['Subject'] = "Подтвердите ваш email"
 
@@ -87,11 +89,12 @@ def send_confirmation_email(token, email):
     msg.attach(MIMEText(html_content, 'html'))
 
     try:
-        with smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT) as server:
+        with smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT) as server:
             server.starttls()
-            server.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
+            server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
             server.send_message(msg)
-        return True
+
+            return True
     except Exception as e:
         logger.error(f"Ошибка отправки email: {e}")
         return False

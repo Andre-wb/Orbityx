@@ -1,20 +1,25 @@
 import os
 from dotenv import load_dotenv
 
-# загружаем переменные окружения из .env
+# Загружаем переменные окружения из .env файла
 load_dotenv()
 
 class Config:
+    # Безопасность и ключи
+    SECRET_KEY = os.getenv('SQLALCHEMY_SECRET_KEY', 'super-secret-key')
+    SERVER_NAME = os.getenv('SERVER_NAME')
 
-    # секретный ключ для сессий и CSRF
-    SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
-
-    # путь к sqlite-базе данных
-    SQLALCHEMY_DATABASE_URI = ('sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'database.db'))
+    # База данных (если не указано явно — используем SQLite)
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///db.sqlite3')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # настройки SMTP
-    SMTP_SERVER = os.getenv('SMTP_SERVER')
-    SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
-    SMTP_USERNAME = os.getenv('SMTP_USERNAME')
-    SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+    # Почта (Flask-Mail)
+    MAIL_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('SMTP_PORT', 587))
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = os.getenv('SMTP_USERNAME')
+    MAIL_PASSWORD = os.getenv('SMTP_PASSWORD')
+
+    # CoinGecko API
+    COINGECKO_API_KEY = os.getenv('COINGECKO_API_KEY')
