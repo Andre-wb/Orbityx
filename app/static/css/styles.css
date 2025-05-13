@@ -6,14 +6,17 @@
     padding: 0;
     outline: none;
 }
+
 a {
     text-decoration: none;
 }
+
 body {
     background: var(--bg-color);
     color: var(--text-color);
     transition: 0.4s ease-in-out;
 }
+
 header {
     background: transparent;
     border-bottom: 1px solid rgb(55, 58, 78);
@@ -23,23 +26,30 @@ header {
     align-items: center;
     transition: 0.4s ease-in-out;
 }
+
 nav a {
     color: var(--text-color);
-    transition: 0.4s ease-in-out;
+    transition: color 0.4s ease;
 }
+
 nav a:hover {
     color: var(--accent-color);
 }
+
 :root {
     --bg-color: #f1f1f1;
     --text-color: #0c0c0c;
     --accent-color: #4272df;
+    --button-bg: #6f5555;
 }
+
 .dark {
     --bg-color: #0f1019;
     --text-color: #f0f5fd;
     --accent-color: #1152e3;
+    --button-bg: #4f5555;
 }
+
 .theme-switch {
     position: relative;
     display: inline-block;
@@ -80,16 +90,64 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(22px);
 }
+
 main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
+
 .currency_table {
     width: 90vw;
 }
+
 .currency_table thead {
-    /*border-bottom: 1px solid var(--); */
+
 }
+
+.link-register,
+.login-link {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.link-register:hover,
+.login-link:hover {
+    color: var(--button-bg);
+    text-decoration: none;
+}
+
+.link-register:visited {
+    color: var(--text-color);
+}
+
+.link-register:hover {
+    color: var(--button-bg);
+    text-decoration: underline;
+}
+
+.link-register,
+.login-link {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+
+a.link-register,
+a.link-register:visited {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+a.link-register:hover {
+    color: var(--button-bg);
+    text-decoration: underline;
+}
+
+
+
 
