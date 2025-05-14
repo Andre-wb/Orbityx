@@ -176,11 +176,10 @@ a.link-register:visited {
     border-color: var(--click-bg);
 }
 
-/* ---------------- КНОПКА ---------------- */
 button[type="submit"] {
     width: 100%;
     padding: 12px;
-    background-color: var(--button-bg);  /* светлая тема */
+    background-color: var(--button-bg);
     color: white;
     border: none;
     border-radius: 30px;
@@ -190,14 +189,13 @@ button[type="submit"] {
 }
 
 .dark button[type="submit"] {
-    background-color: var(--press-bg); /* зелёная кнопка в тёмной теме */
+    background-color: var(--press-bg);
 }
 
 button[type="submit"]:hover {
-    background-color: var(--click-bg);  /* чёткое поведение при hover */
+    background-color: var(--click-bg); 
 }
 
-/* ---------------- СООБЩЕНИЯ И ОШИБКИ ---------------- */
 .error {
     color: red;
     font-size: 0.9rem;
@@ -218,4 +216,27 @@ button[type="submit"]:hover {
 .alert-success {
     background-color: #d4edda;
     color: #155724;
+}
+
+.avatar-display {
+    margin-bottom: 20px;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 100px;
+    display: inline-block;
 }
