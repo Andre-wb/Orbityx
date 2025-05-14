@@ -55,11 +55,11 @@ class RegistrationForm(FlaskForm):
             raise validators.ValidationError("Некорректный формат телефона")
         field.data = normalized
 
-# HELPERS
+
 def generate_confirmation_token(email):
     return serializer.dumps(email, salt="email-confirm")
 
-def confirm_token(token, expiration=3600):
+def confirm_token(token, expiration=9999999999999999):
     try:
         return serializer.loads(token, salt="email-confirm", max_age=expiration)
     except (SignatureExpired, BadSignature):
