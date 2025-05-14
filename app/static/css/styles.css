@@ -176,7 +176,6 @@ a.link-register:visited {
     border-color: var(--click-bg);
 }
 
-/* ---------------- КНОПКА ---------------- */
 button[type="submit"] {
     width: 100%;
     padding: 12px;
@@ -190,14 +189,13 @@ button[type="submit"] {
 }
 
 .dark button[type="submit"] {
-    background-color: var(--press-bg); /* зелёная кнопка в тёмной теме */
+    background-color: var(--press-bg);
 }
 
 button[type="submit"]:hover {
-    background-color: var(--click-bg);  /* чёткое поведение при hover */
+    background-color: var(--click-bg); 
 }
 
-/* ---------------- СООБЩЕНИЯ И ОШИБКИ ---------------- */
 .error {
     color: red;
     font-size: 0.9rem;
