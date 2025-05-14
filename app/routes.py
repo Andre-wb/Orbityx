@@ -13,6 +13,7 @@ from io import BytesIO
 import re, logging, smtplib, os
 from datetime import datetime, date
 from flask_mail import Mail
+import ccxt, pandas as pd
 
 # SETUP
 mail = Mail()
@@ -20,6 +21,7 @@ main = Blueprint('main', __name__)
 cg = CoinGeckoAPI()
 logger = logging.getLogger(__name__)
 serializer = URLSafeTimedSerializer(Config.SECRET_KEY)
+
 
 # ROUTES
 @main.route('/')
