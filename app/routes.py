@@ -13,6 +13,8 @@ from io import BytesIO
 import re, logging, smtplib, os
 from datetime import datetime, date
 from flask_mail import Mail
+from flask_wtf.file import FileField, FileAllowed
+
 
 # SETUP
 mail = Mail()
@@ -55,6 +57,13 @@ class RegistrationForm(FlaskForm):
         if not re.match(r'^[1-9]\d{7,14}$', normalized):
             raise validators.ValidationError("Некорректный формат телефона")
         field.data = normalized
+
+
+class ProfileForm(FlaskForm):
+    avatar = FileField('Загрузить аватарку', validators=[
+        FileAllowed(['jpg', 'jpeg', 'png'], 'Только изображения!')
+    ])
+    submit = SubmitField('Сохранить')
 
 
 def generate_confirmation_token(email):
@@ -174,7 +183,28 @@ def logout():
     return redirect(url_for('main.login'))
 
 # PROFILE
-@main.route('/profile')
+@main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    return render_template('profile.html', user=current_user)
+    form = ProfileForm()
+
+    if form.validate_on_submit():
+        file = form.avatar.data
+        if file and file.filename:
+            filename = f"user_{current_user.id}_{datetime.utcnow().timestamp()}.png"
+            filepath = os.path.join('static', 'avatars', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            file.save(filepath)
+            current_user.avatar = f"avatars/{filename}"
+            db.session.commit()
+            flash('Аватарка обновлена', 'success')
+            return redirect(url_for('main.profile'))
+        else:
+            flash('Файл не выбран или не подходит по формату', 'error')
+
+    return render_template('profile.html', user=current_user, form=form, get_color=get_color)
+
+@main.app_template_filter('get_color')
+def get_color(name):
+    colors = ["#FFB6C1", "#87CEFA", "#FFD700", "#98FB98", "#DDA0DD", "#F0E68C", "#20B2AA"]
+    return colors[hash(name) % len(colors)]
