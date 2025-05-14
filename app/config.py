@@ -6,10 +6,8 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SQLALCHEMY_SECRET_KEY', 'super-secret-key')
-    SERVER_NAME = os.getenv('SERVER_NAME')
 
-
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///database.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
