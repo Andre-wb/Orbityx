@@ -179,7 +179,7 @@ a.link-register:visited {
 button[type="submit"] {
     width: 100%;
     padding: 12px;
-    background-color: var(--button-bg);  /* светлая тема */
+    background-color: var(--button-bg);
     color: white;
     border: none;
     border-radius: 30px;
