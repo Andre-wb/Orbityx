@@ -13,7 +13,6 @@ from io import BytesIO
 import re, logging, smtplib, os
 from datetime import datetime, date
 from flask_mail import Mail
-import ccxt, pandas as pd
 
 # SETUP
 mail = Mail()
