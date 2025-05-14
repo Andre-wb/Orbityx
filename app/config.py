@@ -19,3 +19,4 @@ class Config:
     MAIL_PASSWORD = os.getenv('SMTP_PASSWORD')
 
     COINGECKO_API_KEY = os.getenv('COINGECKO_API_KEY')
+    BINANCE_API_KEY = os.getenv('BINANCE_API_KEY')
