@@ -47,6 +47,7 @@ class RegistrationForm(FlaskForm):
     phone = StringField('Phone', [validators.Length(min=10, max=15), validators.InputRequired(), validators.Regexp(r'^\+?[1-9]\d{7,14}$', message="Некорректный формат телефона")])
     password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=8, max=200)])
     confirm = PasswordField('Confirm Password', [validators.DataRequired(), validators.EqualTo('password')])
+    submit = SubmitField("Зарегистрироваться")
 
     def validate_phone(self, field):
         normalized = re.sub(r'\D', '', field.data)

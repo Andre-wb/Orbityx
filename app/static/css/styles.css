@@ -7,14 +7,34 @@
     outline: none;
 }
 
-a {
-    text-decoration: none;
+:root {
+    --bg-color: #f1f1f1;
+    --text-color: #0c0c0c;
+    --accent-color: #4272df;
+    --button-bg: #000000;
+    --press-bg: #4f824f;
+    --click-bg: #262626;
+    --formr-bg: #e6eae7;
+}
+
+.dark {
+    --bg-color: #0f1019;
+    --text-color: #f0f5fd;
+    --accent-color: #1152e3;
+    --button-bg: #4f5555;
+    --press-bg: #22a03f;
+    --click-bg: #2fba2f;
+    --formr-bg: #000000;
 }
 
 body {
     background: var(--bg-color);
     color: var(--text-color);
     transition: 0.4s ease-in-out;
+}
+
+a {
+    text-decoration: none;
 }
 
 header {
@@ -34,20 +54,6 @@ nav a {
 
 nav a:hover {
     color: var(--accent-color);
-}
-
-:root {
-    --bg-color: #f1f1f1;
-    --text-color: #0c0c0c;
-    --accent-color: #4272df;
-    --button-bg: #6f5555;
-}
-
-.dark {
-    --bg-color: #0f1019;
-    --text-color: #f0f5fd;
-    --accent-color: #1152e3;
-    --button-bg: #4f5555;
 }
 
 .theme-switch {
@@ -75,7 +81,8 @@ nav a:hover {
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px; width: 20px;
+    height: 20px;
+    width: 20px;
     left: 4px;
     bottom: 4px;
     background-color: white;
@@ -102,10 +109,6 @@ main {
     width: 90vw;
 }
 
-.currency_table thead {
-
-}
-
 .link-register,
 .login-link {
     color: var(--text-color);
@@ -115,39 +118,104 @@ main {
 
 .link-register:hover,
 .login-link:hover {
-    color: var(--button-bg);
-    text-decoration: none;
-}
-
-.link-register:visited {
-    color: var(--text-color);
-}
-
-.link-register:hover {
-    color: var(--button-bg);
+    color: var(--click-bg);
     text-decoration: underline;
 }
 
-.link-register,
-.login-link {
-    color: var(--text-color);
-    text-decoration: none;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
-}
-
-
-a.link-register,
 a.link-register:visited {
     color: var(--text-color);
-    text-decoration: none;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
-a.link-register:hover {
-    color: var(--button-bg);
-    text-decoration: underline;
+.form-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 30px;
+    margin: 30px auto;
+    background-color: var(--formr-bg);
+    color: var(--text-color);
+    border-radius: 20px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.3s, color 0.3s;
 }
 
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--text-color);
+}
 
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
 
+.form-group label {
+    margin-bottom: 6px;
+    font-weight: 600;
+}
 
+.form-control {
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 30px;
+    font-size: 1rem;
+    background-color: #fff;
+    color: #000;
+    transition: border-color 0.3s;
+}
+
+.dark .form-control {
+    background-color: #ffffff;
+    color: #000;
+    border-color: #444;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--click-bg);
+}
+
+/* ---------------- КНОПКА ---------------- */
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--button-bg);  /* светлая тема */
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dark button[type="submit"] {
+    background-color: var(--press-bg); /* зелёная кнопка в тёмной теме */
+}
+
+button[type="submit"]:hover {
+    background-color: var(--click-bg);  /* чёткое поведение при hover */
+}
+
+/* ---------------- СООБЩЕНИЯ И ОШИБКИ ---------------- */
+.error {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.alert {
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
