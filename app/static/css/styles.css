@@ -217,3 +217,26 @@ button[type="submit"]:hover {
     background-color: #d4edda;
     color: #155724;
 }
+
+.avatar-display {
+    margin-bottom: 20px;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 100px;
+    display: inline-block;
+}
