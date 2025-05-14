@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 
-from .models import db, User     # ✅ используем существующий db
+from .models import db, User     
 from .routes import main
 
 load_dotenv()
