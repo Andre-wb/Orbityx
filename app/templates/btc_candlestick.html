@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}BTC график | Orbityx{% endblock %}
+{% block content %}
+<h2>График BTC/USDT</h2>
+
+<form action="{{ url_for('main.load_data') }}" method="post">
+    {{ form.hidden_tag() }}
+    <button type="submit">Загрузить свежие свечи из Binance</button>
+</form>
+
+<div id="candlestick-chart" style="height: 600px;"></div>
+
+<script>
+    window.candlesData = {{ candles | tojson }};
+    console.log('Candle data:', window.candlesData);
+</script>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{{ url_for('static', filename='js/btc_candles.js') }}"></script>
+{% endblock %}
