@@ -36,7 +36,13 @@ def base_page():
 
 @main.route('/currency')
 def crypto_currency_page():
-    coins = cg.get_coins_markets(vs_currency='usd', order='market_cap_desc', per_page=50, page=1)
+    coins = cg.get_coins_markets(
+        vs_currency='usd',
+        order='market_cap_desc',
+        per_page=50,
+        page=1,
+        price_change_percentage='1h,24h,7d'
+    )
     return render_template('crypto_currency.html', coins=coins)
 
 # FORMS
