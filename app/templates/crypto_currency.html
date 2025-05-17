@@ -20,8 +20,10 @@
     <tr class="currency_row">
         <td class="number_th">{{ loop.index }}</td>
         <td class="name_th">
-            <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
-            {{ coin.name }} ({{ coin.symbol|upper }})
+            <a href="" class="coin_name">
+                <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
+                {{ coin.name }} ({{ coin.symbol|upper }})
+            </a>
         </td>
         <td class="price_th">${{ coin.current_price }}</td>
         <td class="change_percentage_th">
