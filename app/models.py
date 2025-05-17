@@ -49,21 +49,3 @@ class OHLCV(db.Model):
     low = db.Column(db.Float)
     close = db.Column(db.Float)
     volume = db.Column(db.Float)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
