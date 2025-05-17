@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort, send_file
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort, send_file, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, validators
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from app import db
+from .models import db
 from app.models import User
 from .config import Config
 from pycoingecko import CoinGeckoAPI
@@ -14,6 +14,7 @@ import re, logging, smtplib, os
 from datetime import datetime, date
 from flask_mail import Mail
 from flask_wtf.file import FileField, FileAllowed
+from app.services.ccxt_service import CCXTService
 
 
 # SETUP
@@ -66,10 +67,15 @@ class ProfileForm(FlaskForm):
     submit = SubmitField('Сохранить')
 
 
+class EmptyForm(FlaskForm):
+    pass
+
+
+
 def generate_confirmation_token(email):
     return serializer.dumps(email, salt="email-confirm")
 
-def confirm_token(token, expiration=9999999999999999):
+def confirm_token(token, expiration=3600):
     try:
         return serializer.loads(token, salt="email-confirm", max_age=expiration)
     except (SignatureExpired, BadSignature):
@@ -191,11 +197,8 @@ def profile():
     if form.validate_on_submit():
         file = form.avatar.data
         if file and file.filename:
-            filename = f"user_{current_user.id}_{datetime.utcnow().timestamp()}.png"
-            filepath = os.path.join('static', 'avatars', filename)
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
-            file.save(filepath)
-            current_user.avatar = f"avatars/{filename}"
+            current_user.avatar = file.read()
+            current_user.avatar_mimetype = file.mimetype
             db.session.commit()
             flash('Аватарка обновлена', 'success')
             return redirect(url_for('main.profile'))
@@ -204,7 +207,51 @@ def profile():
 
     return render_template('profile.html', user=current_user, form=form, get_color=get_color)
 
+@main.route('/avatar/<int:user_id>')
+def get_avatar(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.avatar:
+        return send_file(BytesIO(user.avatar), mimetype=user.avatar_mimetype)
+    abort(404)
+
 @main.app_template_filter('get_color')
 def get_color(name):
     colors = ["#FFB6C1", "#87CEFA", "#FFD700", "#98FB98", "#DDA0DD", "#F0E68C", "#20B2AA"]
     return colors[hash(name) % len(colors)]
+
+#CANDLES
+
+@main.route('/load/data', methods=['POST'])
+def load_data():
+    service = CCXTService()
+    # 1) fetch → 2) save
+    candles = service.fetch_ohlcv('BTC/USDT', '1m')
+    service.save_to_db(candles, 'BTC/USDT', '1m')
+    flash(f'Загружено и сохранено {len(candles)} свечей.', 'info')
+    return redirect(url_for('main.btc_chart'))
+
+
+@main.route('/btc/chart')
+def btc_chart():
+    form = EmptyForm()
+    service = CCXTService()
+    entries = service.load_from_db('BTC/USDT', '1m', limit=1000)
+
+    if not entries:
+        flash('В базе нет свечей — сначала загрузите их через «/load/data»', 'warning')
+        return redirect(url_for('main.introduce_page'))
+
+    candle_data = [{
+        'timestamp': e.datetime,
+        'open':   e.open,
+        'high':   e.high,
+        'low':    e.low,
+        'close':  e.close,
+    } for e in entries]
+
+    return render_template('btc_candlestick.html', candles=candle_data, form=form)
+
+
+
+
+

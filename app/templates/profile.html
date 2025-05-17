@@ -7,7 +7,7 @@
     <h3>{{ user.username }}</h3>
     <div class="avatar-display">
         {% if user.avatar %}
-        <img src="{{ url_for('static', filename=user.avatar) }}" alt="Аватар" class="avatar-img">
+        <img src="{{ url_for('main.get_avatar', user_id=user.id) }}" alt="Аватар" class="avatar-img">
         {% else %}
         <div class="avatar-fallback" style="background-color: {{ get_color(user.username) }}">
             {{ user.username[0] | upper }}

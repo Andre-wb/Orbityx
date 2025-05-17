@@ -31,7 +31,16 @@
             {% endif %}
         </td>
         <td class="p-2">${{ "{:,}".format(coin.market_cap | int) }}</td>
+        <td class="">
+            <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
+            {{ coin.name }} ({{ coin.symbol|upper }})
 
+            {% if coin.symbol == 'btc' %}
+            <a href="{{ url_for('main.btc_chart') }}" style="margin-left:10px; font-size: 0.9em;">
+                📉 График
+            </a>
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
     </tbody>

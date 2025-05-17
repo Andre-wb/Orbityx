@@ -240,3 +240,8 @@ button[type="submit"]:hover {
     line-height: 100px;
     display: inline-block;
 }
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
