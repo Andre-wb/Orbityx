@@ -119,9 +119,13 @@ main {
 .name_th {
     text-align: left;
     padding-left: 100px;
+}
+.coin_name {
+    gap: 10px;
     align-items: center;
     display: flex;
-    gap: 10px;
+    color: var(--text-color);
+    transition: 0.4s ease-in-out;
 }
 .marker_cap_th {
     text-align: right;
