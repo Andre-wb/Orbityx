@@ -6,7 +6,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from .models import db
-from app.models import User
+from app.models import User, RegistrationForm, LoginForm, ProfileForm, EmptyForm
 from .config import Config
 from pycoingecko import CoinGeckoAPI
 from io import BytesIO
@@ -15,6 +15,8 @@ from datetime import datetime, date
 from flask_mail import Mail
 from flask_wtf.file import FileField, FileAllowed
 from app.services.ccxt_service import CCXTService
+import ccxt
+from app.config import COIN_NAME_TO_TICKER
 
 
 # SETUP
@@ -44,38 +46,6 @@ def crypto_currency_page():
         price_change_percentage='1h,24h,7d'
     )
     return render_template('crypto_currency.html', coins=coins)
-
-# FORMS
-class LoginForm(FlaskForm):
-    credential = StringField('Email/Phone/Username', validators=[validators.DataRequired()])
-    password   = PasswordField('Пароль', validators=[validators.DataRequired()])
-    submit     = SubmitField('Войти')
-
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', [validators.Length(min=3, max=20), validators.InputRequired()])
-    email = StringField('Email', [validators.Length(min=2, max=250), validators.InputRequired()])
-    phone = StringField('Phone', [validators.Length(min=10, max=15), validators.InputRequired(), validators.Regexp(r'^\+?[1-9]\d{7,14}$', message="Некорректный формат телефона")])
-    password = PasswordField('Password', [validators.DataRequired(), validators.Length(min=8, max=200)])
-    confirm = PasswordField('Confirm Password', [validators.DataRequired(), validators.EqualTo('password')])
-    submit = SubmitField("Зарегистрироваться")
-
-    def validate_phone(self, field):
-        normalized = re.sub(r'\D', '', field.data)
-        if not re.match(r'^[1-9]\d{7,14}$', normalized):
-            raise validators.ValidationError("Некорректный формат телефона")
-        field.data = normalized
-
-
-class ProfileForm(FlaskForm):
-    avatar = FileField('Загрузить аватарку', validators=[
-        FileAllowed(['jpg', 'jpeg', 'png'], 'Только изображения!')
-    ])
-    submit = SubmitField('Сохранить')
-
-
-class EmptyForm(FlaskForm):
-    pass
-
 
 
 def generate_confirmation_token(email):
@@ -236,26 +206,53 @@ def load_data():
     flash(f'Загружено и сохранено {len(candles)} свечей.', 'info')
     return redirect(url_for('main.btc_chart'))
 
+@main.route('/chart/<coin_id>')
+def coin_chart(coin_id):
+    try:
+        service = CCXTService()
 
-@main.route('/btc/chart')
-def btc_chart():
-    form = EmptyForm()
-    service = CCXTService()
-    entries = service.load_from_db('BTC/USDT', '1m', limit=1000)
+        ticker = COIN_NAME_TO_TICKER.get(coin_id.upper())
+        if not ticker:
+            flash('Неизвестная криптовалюта.', 'error')
+            return redirect(url_for('main.crypto_currency_page'))
 
-    if not entries:
-        flash('В базе нет свечей — сначала загрузите их через «/load/data»', 'warning')
-        return redirect(url_for('main.introduce_page'))
+        candles = service.get_candles(ticker, 'USDT', '1h', limit=100)
+        if not candles:
+            flash('Не удалось получить данные графика.', 'error')
+            return redirect(url_for('main.crypto_currency_page'))
 
-    candle_data = [{
-        'timestamp': e.datetime,
-        'open':   e.open,
-        'high':   e.high,
-        'low':    e.low,
-        'close':  e.close,
-    } for e in entries]
+        return render_template('candlestick_chart.html', coin=ticker, candles=candles)
+    except Exception as e:
+        logger.error(f"Ошибка при получении графика для {coin_id}: {e}")
+        flash('Произошла ошибка при загрузке графика.', 'error')
+        return redirect(url_for('main.crypto_currency_page'))
 
-    return render_template('btc_candlestick.html', candles=candle_data, form=form)
+class CCXTService:
+    def __init__(self):
+        self.exchange = ccxt.binance()
+
+    def get_candles(self, base_symbol, quote_symbol, timeframe='1h', limit=100):
+        """
+        Получает OHLCV данные по символу (например: BTC/USDT) и заданному таймфрейму.
+        """
+        symbol = f"{base_symbol.upper()}/{quote_symbol.upper()}"
+        try:
+            ohlcv = self.exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
+            candles = [
+                {
+                    'timestamp': datetime.utcfromtimestamp(c[0] / 1000).strftime('%Y-%m-%d %H:%M'),
+                    'open': c[1],
+                    'high': c[2],
+                    'low': c[3],
+                    'close': c[4],
+                    'volume': c[5],
+                }
+                for c in ohlcv
+            ]
+            return candles
+        except Exception as e:
+            logger.error(f"Ошибка получения данных свечей для {symbol}: {e}")
+            return []
 
 
 
