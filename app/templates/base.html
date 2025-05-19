@@ -16,7 +16,11 @@
     <nav>
         <a href="/">О нас</a>
         <a href="/currency">Криптовалюты</a>
-        <a href="{{ url_for('main.login') }}">Войти</a>
+        {% if current_user.is_authenticated %}
+            <a href="/profile">Профиль</a>
+        {% else %}
+            <a href="{{ url_for('main.login') }}">Войти</a>
+        {% endif %}
     </nav>
     <label class="theme-switch">
         <input type="checkbox" id="theme-toggle">

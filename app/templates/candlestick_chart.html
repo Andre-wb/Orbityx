@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}График {{ coin }} | Orbityx{% endblock %}
+{% block content %}
+<h2>График {{ coin }}/USDT</h2>
+
+<div id="candlestick-chart" style="height: 600px;"></div>
+
+<script>
+    window.candlesData = {{ candles | tojson }};
+</script>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{{ url_for('static', filename='js/btc_candles.js') }}"></script>
+{% endblock %}

@@ -1,5 +1,3 @@
-# load_next_1000.py
-
 from app import create_app, db
 from app.models import OHLCV
 import ccxt
@@ -7,32 +5,29 @@ from datetime import datetime
 from sqlalchemy import func
 
 def load_next_batch(symbol='BTC/USDT', timeframe='1m', batch_size=1000):
-    # 1) Создаём приложение и контекст
     app = create_app()
     ctx = app.app_context()
     ctx.push()
 
     try:
-        # 2) Находим максимальный timestamp уже в базе
         max_ts = db.session.query(func.max(OHLCV.timestamp)) \
             .filter_by(symbol=symbol, timeframe=timeframe) \
             .scalar()
         if max_ts is None:
-            raise ValueError("В базе нет записей по этому символу/таймфрейму")
-
-        since = max_ts + 1  # старт со следующей миллисекунды
+            since = 0
+        else:
+            since = max_ts + 1
         print(f"Загружаем свечи с {datetime.utcfromtimestamp(since/1000)} (ts={since})")
 
-        # 3) Инициализируем Binance и запрашиваем следующую тысячу
-        exchange = ccxt.binance()
+        exchange = ccxt.binance({'enableRateLimit': True,})
         candles = exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=batch_size)
-        print(f"Получили {len(candles)} свечей")
+        count = len(candles)
+        print(f"Получили {count} свечей")
 
-        if not candles:
+        if count == 0:
             print("Новых свечей нет.")
-            return
+            return 0
 
-        # 4) Сохраняем их в БД
         for ts, o, h, l, c, v in candles:
             record = OHLCV(
                 symbol=symbol,
@@ -47,11 +42,26 @@ def load_next_batch(symbol='BTC/USDT', timeframe='1m', batch_size=1000):
             )
             db.session.add(record)
         db.session.commit()
-        print(f"Сохранили {len(candles)} свечей в базе.")
+        print(f"Сохранили {count} свечей в базе.")
+        return count
 
     finally:
-        # 5) Закрываем контекст
         ctx.pop()
 
+
+def load_all(symbol='BTC/USDT', timeframe='1m', batch_size=1000):
+    total = 0
+    batch_num = 0
+    while True:
+        batch_num += 1
+        count = load_next_batch(symbol, timeframe, batch_size)
+        if count == 0:
+            print("Новых свечей не нашлось — всё подгружено.")
+            break
+        total += count
+        print(f"Партия #{batch_num}: добавлено {count} свечей, всего {total}.")
+    print(f"Всё: добавлено {total} новых свечей.")
+
+
 if __name__ == "__main__":
-    load_next_batch()
+    load_all()

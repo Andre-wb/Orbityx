@@ -20,8 +20,10 @@
     <tr class="currency_row">
         <td class="number_th">{{ loop.index }}</td>
         <td class="name_th">
-            <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
-            {{ coin.name }} ({{ coin.symbol|upper }})
+            <a href="{{ url_for('main.coin_chart', coin_id=coin.id) }}" class="coin_name">
+                <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
+                {{ coin.name }} ({{ coin.symbol|upper }})
+            </a>
         </td>
         <td class="price_th">${{ coin.current_price }}</td>
         <td class="change_percentage_th">
@@ -31,19 +33,6 @@
             <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
             {% endif %}
         </td>
-<<<<<<< HEAD
-        <td class="p-2">${{ "{:,}".format(coin.market_cap | int) }}</td>
-        <td class="">
-            <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
-            {{ coin.name }} ({{ coin.symbol|upper }})
-
-            {% if coin.symbol == 'btc' %}
-            <a href="{{ url_for('main.btc_chart') }}" style="margin-left:10px; font-size: 0.9em;">
-                📉 График
-            </a>
-            {% endif %}
-        </td>
-=======
         <td class="change_percentage_th">
             {% if coin.price_change_percentage_24h >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
@@ -59,7 +48,6 @@
             {% endif %}
         </td>
         <td class="marker_cap_th">${{ "{:,}".format(coin.market_cap | int) }}</td>
->>>>>>> origin/main
     </tr>
     {% endfor %}
     </tbody>
