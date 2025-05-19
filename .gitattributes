@@ -1,1 +1,2 @@
 instance/database.db filter=lfs diff=lfs merge=lfs -text
+instance/database.db filter=lfs diff=lfs merge=lfs -text
