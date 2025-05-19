@@ -5,8 +5,7 @@ from wtforms import StringField, PasswordField, SubmitField, validators
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from .models import db
-from app.models import User
+from .models import db, User, OHLCV
 from .config import Config
 from pycoingecko import CoinGeckoAPI
 from io import BytesIO
@@ -230,7 +229,6 @@ def get_color(name):
 @main.route('/load/data', methods=['POST'])
 def load_data():
     service = CCXTService()
-    # 1) fetch → 2) save
     candles = service.fetch_ohlcv('BTC/USDT', '1m')
     service.save_to_db(candles, 'BTC/USDT', '1m')
     flash(f'Загружено и сохранено {len(candles)} свечей.', 'info')
@@ -241,14 +239,14 @@ def load_data():
 def btc_chart():
     form = EmptyForm()
     service = CCXTService()
-    entries = service.load_from_db('BTC/USDT', '1m', limit=1000)
+    entries = OHLCV.query.filter_by(symbol='BTC/USDT', timeframe='1m').order_by(OHLCV.timestamp.asc()).all()
 
     if not entries:
         flash('В базе нет свечей — сначала загрузите их через «/load/data»', 'warning')
         return redirect(url_for('main.introduce_page'))
 
     candle_data = [{
-        'timestamp': e.datetime,
+        'timestamp': parse_timestamp(e.datetime) if isinstance(e.datetime, str) else e.datetime,
         'open':   e.open,
         'high':   e.high,
         'low':    e.low,
@@ -257,6 +255,46 @@ def btc_chart():
 
     return render_template('btc_candlestick.html', candles=candle_data, form=form)
 
+def parse_timestamp(timestamp):
+    formats = [
+        '%Y-%m-%dT%H:%M:%S',
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%d %H:%M',
+        '%Y-%m-%d'
+    ]
+    for fmt in formats:
+        try:
+            return datetime.strptime(timestamp, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+@main.route('/load/full_data', methods=['POST'])
+def load_full_data():
+    service = CCXTService()
+    symbol = 'BTC/USDT'
+    timeframe = '1m'
+    limit = 1000
+    all_candles = []
+    since = service.exchange.parse8601('2017-01-01T00:00:00Z')
+
+    while True:
+        print(f"[INFO] Fetching data since {datetime.utcfromtimestamp(since / 1000)}")
+        candles = service.fetch_ohlcv(symbol, timeframe, since=since, limit=limit)
+
+        if not candles:
+            break
+
+        all_candles.extend(candles)
+        since = candles[-1][0]
+        if len(candles) < limit:
+            break
+
+    print(f"[INFO] Всего загружено {len(all_candles)} свечей")
+    service.save_to_db(all_candles, symbol, timeframe)
+    flash(f'Загружена полная история: {len(all_candles)} свечей.', 'info')
+    return redirect(url_for('main.btc_chart'))
 
 
 
