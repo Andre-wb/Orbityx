@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 
 
 load_dotenv()
-
 COIN_NAME_TO_TICKER = {
     "BITCOIN": "BTC",
     "ETHEREUM": "ETH",
