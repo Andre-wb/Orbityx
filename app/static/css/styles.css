@@ -8,9 +8,10 @@
 }
 
 :root {
-    --bg-color: #f1f1f1;
+    --bg-color: #fff;
     --text-color: #0c0c0c;
     --accent-color: #4272df;
+    --accent-shadow: rgba(0, 0, 0, 0.2);
     --button-bg: #000000;
     --border-color: #b5b5b5;
     --press-bg: #4f824f;
@@ -24,10 +25,11 @@
     --bg-color: #0f1019;
     --text-color: #f0f5fd;
     --accent-color: #1152e3;
+    --accent-shadow: rgba(83, 118, 200, 0.32);
     --button-bg: #4f5555;
     --border-color: #373A4EFF;
     --press-bg: #22a03f;
-    --click-bg: #2fba2f;
+    --click-bg: #6fdc6f;
     --formr-bg: #000000;
     --lower-price: #e63d19;
     --higher-price: #0fdc55;
@@ -38,11 +40,22 @@ body {
     color: var(--text-color);
     transition: 0.4s ease-in-out;
 }
-
+.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1.2s ease-out, transform 0.8s ease-out;
+}
+.show {
+    opacity: 1;
+    transform: translateY(0);
+}
 a {
     text-decoration: none;
 }
-
+#logo {
+    transition: opacity 0.4s ease-in-out;
+    opacity: 1;
+}
 header {
     background: transparent;
     border-bottom: 1px solid var(--border-color);
@@ -51,17 +64,39 @@ header {
     justify-content: space-between;
     align-items: center;
     transition: 0.4s ease-in-out;
+    gap: 10px
 }
-
+header nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.register-link {
+    background: var(--accent-color);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 15px;
+    transition: 0.4s ease-in-out;
+}
+.register-link:hover {
+    background: #fff;
+    color: var(--accent-color);
+}
 nav a {
     color: var(--text-color);
+    font-weight: 600;
     transition: color 0.4s ease;
+    letter-spacing: 1px;
 }
 
 nav a:hover {
     color: var(--accent-color);
 }
-
+.binance-links {
+    gap: 15px;
+    display: flex;
+}
 .theme-switch {
     position: relative;
     display: inline-block;
@@ -101,7 +136,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(22px);
+    transform: translateX(18px);
 }
 
 main {
@@ -165,8 +200,7 @@ main {
 
 .link-register:hover,
 .login-link:hover {
-    color: var(--click-bg);
-    text-decoration: underline;
+    color: var(--higher-price);
 }
 
 a.link-register:visited {
@@ -189,6 +223,7 @@ a.link-register:visited {
     text-align: center;
     margin-bottom: 25px;
     color: var(--text-color);
+    transition: 0.4s ease-in-out;
 }
 
 .form-group {
@@ -292,4 +327,40 @@ button[type="submit"]:hover {
 table {
     border-collapse: collapse;
     width: 100%;
+}
+.intro-h1 {
+    font-size: 60px;
+    font-weight: bold;
+    font-style: italic;
+    margin-top: 5vh;
+}
+.intro-h4 {
+    font-weight: bold;
+    font-style: italic;
+    letter-spacing: 2px;
+    transition-delay: 0.3s;
+}
+.image-wrapper {
+    perspective: 800px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(-1px 15px 100px var(--accent-shadow));
+    transition-delay: 0.6s;
+}
+
+.intro-start-img {
+    width: 60vw;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    border-radius: 12px;
+    will-change: transform;
+    /* Эффект объёма */
+}
+.log-subtext {
+    position: relative;
+    display: flex;
+    top: 10px;
 }
