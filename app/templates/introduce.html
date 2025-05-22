@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
-{% block content %}
 {% block title %}Добро пожаловать на Orbityx{% endblock %}
-<h1>Смотри любые криптовалюты в один клик</h1>
-<h4>бесплатно и без ограничений</h4>
+{% block content %}
+<h1 class="intro-h1 hidden">Смотри любые криптовалюты в один клик</h1>
+<h4 class="intro-h4 hidden">бесплатно и без ограничений</h4>
+<div class="image-wrapper hidden">
+    <img id="intro-binance_picture" class="intro-start-img" src="/static/img/light_binance.jpg" alt="Binance">
+</div>
 {% endblock %}
