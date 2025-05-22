@@ -20,7 +20,7 @@
     <tr class="currency_row">
         <td class="number_th">{{ loop.index }}</td>
         <td class="name_th">
-            <a href="{{ url_for('main.coin_chart', coin_id=coin.id) }}" class="coin_name">
+            <a href="{{ url_for('main.btc_chart', coin_id=coin.id) }}" class="coin_name">
                 <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
                 {{ coin.name }} ({{ coin.symbol|upper }})
             </a>
