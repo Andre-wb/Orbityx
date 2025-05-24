@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField, validators
 import ccxt
 import time
-from sqlalchemy import Table, Column, Integer, Float, String, LargeBinary
+from sqlalchemy import Table, Column, Integer, Float, String, LargeBinary, BigInteger
 import re
 from flask_wtf.file import FileField, FileAllowed
 from flask_wtf import FlaskForm
@@ -42,7 +42,7 @@ class OHLCV(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     symbol = db.Column(db.String)
     timeframe = db.Column(db.String)
-    timestamp = db.Column(db.Integer)
+    timestamp = db.Column(db.BigInteger)
     datetime = db.Column(db.String)
     open = db.Column(db.Float)
     high = db.Column(db.Float)

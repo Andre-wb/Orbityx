@@ -226,49 +226,29 @@ def get_color(name):
 
 #CANDLES
 
-@main.route('/load/data', methods=['POST'])
-def load_data():
-    service = CCXTService()
-    candles = service.fetch_ohlcv('BTC/USDT', '1m')
-    service.save_to_db(candles, 'BTC/USDT', '1m')
-    flash(f'Загружено и сохранено {len(candles)} свечей.', 'info')
-    return redirect(url_for('main.btc_chart'))
-
-
 @main.route('/btc/chart')
 def btc_chart():
     form = EmptyForm()
-    service = CCXTService()
-    entries = OHLCV.query.filter_by(symbol='BTC/USDT', timeframe='1m').order_by(OHLCV.timestamp.asc()).all()
-
+    entries = (OHLCV.query
+               .filter_by(symbol='BTC/USDT', timeframe='1m')
+               .order_by(OHLCV.timestamp.desc())
+               .limit(1000)
+               .all())
     if not entries:
-        flash('В базе нет свечей — сначала загрузите их через «/load/data»', 'warning')
+        flash('В базе нет свечей', 'warning')
         return redirect(url_for('main.introduce_page'))
 
-    candle_data = [{
-        'timestamp': parse_timestamp(e.datetime) if isinstance(e.datetime, str) else e.datetime,
-        'open':   e.open,
-        'high':   e.high,
-        'low':    e.low,
-        'close':  e.close,
-    } for e in entries]
+    candles = [{
+        'timestamp': int(e.timestamp / 1000),
+        'open'  : e.open,
+        'high'  : e.high,
+        'low'   : e.low,
+        'close' : e.close,
+    } for e in reversed(entries)]
 
-    return render_template('btc_candlestick.html', candles=candle_data, form=form)
-
-def parse_timestamp(timestamp):
-    formats = [
-        '%Y-%m-%dT%H:%M:%S',
-        '%Y-%m-%d %H:%M:%S',
-        '%Y-%m-%d %H:%M',
-        '%Y-%m-%d'
-    ]
-    for fmt in formats:
-        try:
-            return datetime.strptime(timestamp, fmt)
-        except ValueError:
-            continue
-    return None
-
+    return render_template('btc_candlestick.html',
+                           candles=candles,
+                           form=form)
 
 @main.route('/load/full_data', methods=['POST'])
 def load_full_data():
@@ -296,6 +276,36 @@ def load_full_data():
     flash(f'Загружена полная история: {len(all_candles)} свечей.', 'info')
     return redirect(url_for('main.btc_chart'))
 
+@main.route('/api/candles')
+def get_candles():
+    symbol = request.args.get('symbol', 'BTC/USDT')
+    try:
+        start_ts = int(request.args.get('start', 0))
+        end_ts   = int(request.args.get('end', 0))
+    except (TypeError, ValueError):
+        return jsonify([]), 400
+    if start_ts > 1e12:
+        start_ts = int(start_ts / 1000)
+    if end_ts > 1e12:
+        end_ts = int(end_ts / 1000)
+    start_ms = start_ts * 1000
+    end_ms = end_ts * 1000
+    candles = OHLCV.query.filter(
+        OHLCV.symbol == symbol,
+        OHLCV.timestamp >= start_ms,
+        OHLCV.timestamp <= end_ms
+    ).order_by(OHLCV.timestamp.asc()).all()
+    result = []
+    for c in candles:
+        if None in (c.timestamp, c.open, c.high, c.low, c.close):
+            continue
+        result.append({
+            'timestamp': int(c.timestamp / 1000),
+            'open'     : c.open,
+            'high'     : c.high,
+            'low'      : c.low,
+            'close'    : c.close,
+            'volume'   : c.volume,
+        })
 
-
-
+    return jsonify(result)

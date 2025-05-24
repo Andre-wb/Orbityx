@@ -19,6 +19,8 @@
     --formr-bg: #e6eae7;
     --lower-price: #e40000;
     --higher-price: #02ba36;
+    --chart-bg: #ffffff;
+    --chart-text: #000000;
 }
 
 .dark {
@@ -33,6 +35,8 @@
     --formr-bg: #000000;
     --lower-price: #e63d19;
     --higher-price: #0fdc55;
+    --chart-bg: #0f1019;
+    --chart-text: #f0f5fd;
 }
 
 body {
