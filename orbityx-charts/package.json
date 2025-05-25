@@ -111,7 +111,6 @@
     "yargs": "17.7.2"
   },
   "scripts": {
-    // Может быть тут что-нибудь изменим
     "postinstall": "npm run install-hooks",
     "install-hooks": "node scripts/githooks/install.js",
     "clean": "rimraf lib/ dist/",
