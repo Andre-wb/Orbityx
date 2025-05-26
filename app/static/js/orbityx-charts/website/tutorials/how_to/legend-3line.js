@@ -218,7 +218,7 @@ const getLastBar = series => {
 };
 const formatPrice = price => (Math.round(price * 100) / 100).toFixed(2);
 const setTooltipHtml = (name, date, price) => {
-	legend.innerHTML = `<div style="font-size: 24px; margin: 4px 0px;">${name}</div><div style="font-size: 22px; margin: 4px 0px;">${price}</div><div>${date}</div>`;
+	legend.textContent = `<div style="font-size: 24px; margin: 4px 0px;">${name}</div><div style="font-size: 22px; margin: 4px 0px;">${price}</div><div>${date}</div>`;
 };
 
 const updateLegend = param => {

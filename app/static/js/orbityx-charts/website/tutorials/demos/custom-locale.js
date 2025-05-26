@@ -790,7 +790,7 @@ const styles = `
 `;
 
 const stylesElement = document.createElement('style');
-stylesElement.innerHTML = styles;
+stylesElement.textContent = styles;
 container.appendChild(stylesElement);
 
 const buttonsContainer = document.createElement('div');

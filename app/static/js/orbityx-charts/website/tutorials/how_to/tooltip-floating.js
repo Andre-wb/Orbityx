@@ -236,7 +236,7 @@ chart.subscribeCrosshairMove(param => {
 		toolTip.style.display = 'block';
 		const data = param.seriesData.get(series);
 		const price = data.value !== undefined ? data.value : data.close;
-		toolTip.innerHTML = `<div style="color: ${LINE_LINE_COLOR}">Apple Inc.</div><div style="font-size: 24px; margin: 4px 0px; color: ${CHART_TEXT_COLOR}">
+		toolTip.textContent = `<div style="color: ${LINE_LINE_COLOR}">Apple Inc.</div><div style="font-size: 24px; margin: 4px 0px; color: ${CHART_TEXT_COLOR}">
 			${Math.round(100 * price) / 100}
 			</div><div style="color: ${CHART_TEXT_COLOR}">
 			${dateStr}

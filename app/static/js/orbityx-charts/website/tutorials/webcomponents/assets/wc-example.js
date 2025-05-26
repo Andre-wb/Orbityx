@@ -3,7 +3,7 @@ import { themeColors } from '../../../theme-colors';
 
 (function() {
 	const template = document.createElement('template');
-	template.innerHTML = `
+	template.textContent = `
     <style>
     :host {
         display: block;
@@ -45,7 +45,7 @@ import { themeColors } from '../../../theme-colors';
       button:focus-visible {
         outline: 4px auto -webkit-focus-ring-color;
       }
-        
+
       #example-chart {
         height: var(--lwchart-height, 300px);
       }

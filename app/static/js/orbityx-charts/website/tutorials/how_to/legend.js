@@ -210,7 +210,7 @@ legend.style = `position: absolute; left: 12px; top: 12px; z-index: 1; font-size
 container.appendChild(legend);
 
 const firstRow = document.createElement('div');
-firstRow.innerHTML = symbolName;
+firstRow.textContent = symbolName;
 firstRow.style.color = CHART_TEXT_COLOR;
 legend.appendChild(firstRow);
 
@@ -221,7 +221,7 @@ chart.subscribeCrosshairMove(param => {
 		const price = data.value !== undefined ? data.value : data.close;
 		priceFormatted = price.toFixed(2);
 	}
-	firstRow.innerHTML = `${symbolName} <strong>${priceFormatted}</strong>`;
+	firstRow.textContent = `${symbolName} <strong>${priceFormatted}</strong>`;
 });
 
 chart.timeScale().fitContent();

@@ -46,7 +46,7 @@ chart.subscribeCrosshairMove(param => {
         toolTip.style.display = 'block';
         const data = param.seriesData.get(series);
         const price = data.value !== undefined ? data.value : data.close;
-        toolTip.innerHTML = `<div>${price.toFixed(2)}</div>`;
+        toolTip.textContent = `<div>${price.toFixed(2)}</div>`;
 
         // Position tooltip according to mouse cursor position
         toolTip.style.left = param.point.x + 'px';
@@ -94,7 +94,7 @@ chart.subscribeCrosshairMove(param => {
 Below are a few external resources related to creating and styling html elements:
 
 - [createElement](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)
-- [innerHTML](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML)
+- [textContent](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML)
 - [style property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style)
 
 ## Examples

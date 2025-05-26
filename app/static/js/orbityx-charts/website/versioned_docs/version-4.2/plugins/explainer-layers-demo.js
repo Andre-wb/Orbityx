@@ -230,7 +230,7 @@ lineSeries.attachPrimitive(layersPrimitive);
 function generateLayerOption(id, name, selected) {
 	const element = document.createElement('option');
 	element.value = id;
-	element.innerHTML = name;
+	element.textContent = name;
 	element.selected = selected;
 	return element;
 }

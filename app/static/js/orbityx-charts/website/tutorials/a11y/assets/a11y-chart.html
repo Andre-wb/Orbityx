@@ -449,7 +449,7 @@
 				const tooltipContent = document
 					.querySelector(id)
 					.content.cloneNode(true);
-				tooltip.innerHTML = '';
+				tooltip.textContent = '';
 				tooltip.appendChild(tooltipContent);
 			}
 
@@ -459,7 +459,7 @@
 				tooltip.style.opacity = '1';
 			});
 			containerEl.addEventListener('focusout', () => {
-				tooltip.innerHTML = '';
+				tooltip.textContent = '';
 				tooltip.style.opacity = '0';
 			});
 			containerEl.addEventListener('keydown', e => {
