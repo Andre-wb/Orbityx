@@ -49,6 +49,7 @@
     "node": ">=22.3"
   },
   "dependencies": {
+    "cliui": "~8.0.1",
     "fancy-canvas": "2.1.0"
   },
   "devDependencies": {

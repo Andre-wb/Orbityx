@@ -6,6 +6,6 @@
 <script>
     window.candlesData = {{ candles | tojson }};
 </script>
-<script src="{{ url_for('static', filename='js/lightweight-charts.standalone.production.js') }}"></script>
+<script src="{{ url_for('static', filename='js/orbityx-charts/dist/lightweight-charts.standalone.development.js') }}"></script>
 <script src="{{ url_for('static', filename='js/btc_candles.js') }}" defer></script>
 {% endblock %}
