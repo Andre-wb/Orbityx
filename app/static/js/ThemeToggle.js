@@ -2,7 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
     const logo = document.getElementById('logo');
-    const intro_binance_picture = document.getElementById('intro-binance_picture')
+    const intro_binance_picture = document.getElementById('intro-binance_picture');
+
+    // Критически важная проверка существования элементов
+    if (!toggle || !logo || !intro_binance_picture) {
+        console.warn('Один или несколько элементов темы не найдены');
+        return;
+    }
 
     const lightLogo = "/static/img/Light-theme-logo.png";
     const darkLogo = "/static/img/Black-theme-logo.png";
@@ -27,18 +33,20 @@ document.addEventListener('DOMContentLoaded', () => {
         html.classList.add('dark');
         toggle.checked = true;
         logo.src = darkLogo;
-        intro_binance_picture.src = dark_binance_picture
+        intro_binance_picture.src = dark_binance_picture;
     } else {
         logo.src = lightLogo;
-        intro_binance_picture.src = light_binance_picture
+        intro_binance_picture.src = light_binance_picture;
     }
 
     toggle.addEventListener('change', () => {
         const isDark = html.classList.toggle('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        if (intro_binance_picture || !intro_binance_picture.classList.contains('hidden')) {
-            const newSrc = isDark ? dark_binance_picture : light_binance_picture;
-            switchImage(intro_binance_picture, newSrc);
-        }
+
+        const newLogoSrc = isDark ? darkLogo : lightLogo;
+        logo.src = newLogoSrc;
+
+        const newBinanceSrc = isDark ? dark_binance_picture : light_binance_picture;
+        switchImage(intro_binance_picture, newBinanceSrc);
     });
 });
