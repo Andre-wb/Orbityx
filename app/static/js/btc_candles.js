@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const chartContainer = document.getElementById('candlestick-chart');
     const css = getComputedStyle(document.documentElement);
-
     const chart = LightweightCharts.createChart(chartContainer, {
         width: chartContainer.clientWidth,
         height: 600,
@@ -15,9 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         timeScale: { timeVisible: true },
     });
-
     const series = chart.addCandlestickSeries();
-
     let candleData = (window.candlesData || []).map(c => ({
         time: c.timestamp,
         open: c.open,
@@ -56,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .finally(() => loading = false);
         }
     });
-
     window.addEventListener('resize', () => {
         chart.resize(chartContainer.clientWidth, 600);
     });
