@@ -47,7 +47,6 @@ def create_app():
             db.engine.connect()
             print("Успешное подключение к базе данных")
 
-            # Проверка существования таблиц
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             tables = inspector.get_table_names()
