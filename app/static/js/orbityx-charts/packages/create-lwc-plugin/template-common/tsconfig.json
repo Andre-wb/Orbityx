@@ -17,5 +17,7 @@
 		"declarationDir": "typings",
 		"emitDeclarationOnly": true
 	},
-	"include": ["src"]
+	"include": [
+      "src"
+    ]
 }

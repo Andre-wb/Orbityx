@@ -1,4 +1,4 @@
-import { LogicalRange } from '../model/time-data';
+import { LogicalRange } from './time-data';
 
 export const enum InvalidationLevel {
 	None = 0,

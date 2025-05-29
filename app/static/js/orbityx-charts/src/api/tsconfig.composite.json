@@ -1,9 +1,9 @@
 {
 	"extends": "../../tsconfig.composite.base.json",
 	"references": [
-		{ "path": "../formatters/tsconfig.composite.json" },
-		{ "path": "../gui/tsconfig.composite.json" },
-		{ "path": "../tsconfig.model.json" }
+		{ "path": "../formatters/tsconfig.composite.json"},
+		{ "path": "../gui/tsconfig.composite.json"},
+		{ "path": "../tsconfig.model.json"}
 	],
 	"include": [
 		"./**/*.ts"

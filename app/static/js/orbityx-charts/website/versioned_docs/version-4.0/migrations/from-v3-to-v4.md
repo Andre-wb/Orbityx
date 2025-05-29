@@ -57,11 +57,11 @@ const chart = createChart({
 
 ## `overlay` property of series options has been removed
 
-Please follow [the guide for migrating from v2 to v3](./from-v2-to-v3.md#creating-overlay) where this option was deprecated.
+Please follow [the guide for migrating from v2 to v3](from-v2-to-v3.md#creating-overlay) where this option was deprecated.
 
 ## `priceScale` option has been removed
 
-Please follow [the guide for migrating from v2 to v3](./from-v2-to-v3.md#two-price-scales).
+Please follow [the guide for migrating from v2 to v3](from-v2-to-v3.md#two-price-scales).
 
 ## `priceScale()` method of chart API now requires to provide price scale id
 

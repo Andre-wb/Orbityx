@@ -5,7 +5,7 @@ There are a variety of tests included to ensure the quality, and stability of th
 When contributing to the library, please note:
 
 1. Every pull request should have an adequate test/s whenever it's possible.
-1. If your changes affect painting, then your changes should contain a test case (or test cases) for [graphics tests](./e2e/graphics).
+1. If your changes affect painting, then your changes should contain a test case (or test cases) for [graphics tests](e2e/graphics).
 1. Your pull request should pass CI (except checks marked as "not required" - in this case a reviewer should pay attention to job's artifacts). Current CI tests include:
    - Coverage
    - Graphics
@@ -28,11 +28,11 @@ There are several e2e tests which simulate the usage of the library within a bro
 
 ### Coverage
 
-The e2e coverage test attempts to execute as many lines as possible within the library JS file. This is achieved by running a [test script](./e2e/coverage/coverage-test-cases.ts) which attempts to evoke all of the API methods and set as many options as possible. The e2e test simulates a variety of user interactions such as scrolling, clicking, and dragging.
+The e2e coverage test attempts to execute as many lines as possible within the library JS file. This is achieved by running a [test script](e2e/coverage/coverage-test-cases.ts) which attempts to evoke all of the API methods and set as many options as possible. The e2e test simulates a variety of user interactions such as scrolling, clicking, and dragging.
 
 During this execution, if the page reports any errors then the test will fail.
 
-Once the test is completed, it compares the number of lines executed versus the total number of lines in the file. If this percentage is below the thresholds defined in [coverage-config.ts](./e2e/coverage/coverage-config.ts) file then the test will fail.
+Once the test is completed, it compares the number of lines executed versus the total number of lines in the file. If this percentage is below the thresholds defined in [coverage-config.ts](e2e/coverage/coverage-config.ts) file then the test will fail.
 
 Note: It is not expected that the coverage score be near 100% due to the nature of the test and the libraries extensive error handling (which doesn't get executed in normal circumstances).
 
@@ -62,7 +62,7 @@ GENERATE_COVERAGE_FILE=true node ./tests/e2e/coverage/runner.js ./dist/orbityx-c
 
 ### Graphics
 
-The e2e graphics tests visually compare the charts produced by the library against a 'golden' release (typically the latest commit on the 'master' branch). Further information about the graphics tests can be viewed here: [Graphics README](./e2e/graphics/README.md).
+The e2e graphics tests visually compare the charts produced by the library against a 'golden' release (typically the latest commit on the 'master' branch). Further information about the graphics tests can be viewed here: [Graphics README](e2e/graphics/README.md).
 
 #### Running the Graphics tests
 

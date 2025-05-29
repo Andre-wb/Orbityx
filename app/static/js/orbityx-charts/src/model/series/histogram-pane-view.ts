@@ -1,8 +1,8 @@
 import { ensureNotNull } from '../../helpers/assertions';
 
-import { BarPrice } from '../../model/bar';
-import { ISeriesBarColorer } from '../../model/series-bar-colorer';
-import { TimePointIndex } from '../../model/time-data';
+import { BarPrice } from '../bar';
+import { ISeriesBarColorer } from '../series-bar-colorer';
+import { TimePointIndex } from '../time-data';
 import { HistogramItem, PaneRendererHistogram, PaneRendererHistogramData } from '../../renderers/histogram-renderer';
 
 import { LinePaneViewBase } from './line-pane-view-base';

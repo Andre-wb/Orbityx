@@ -8,12 +8,12 @@
 			"es2020"
 		],
 		"moduleResolution": "bundler",
-		"module": "Preserve",
+		"module": "Preserve"
 	},
 	"include": [
 		"./coverage/**/*.ts",
-		"./graphics/graphics-test-cases.ts",
-		"./graphics/generate-golden-content.ts",
+      "./graphics/graphics-test-cases.ts",
+      "./graphics/generate-golden-content.ts",
 		"./graphics/generate-test-cases.ts",
 		"./graphics/utils.ts",
 		"./graphics/helpers/**/*.ts",

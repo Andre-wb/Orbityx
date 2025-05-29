@@ -28,7 +28,7 @@
     --text-color: #f0f5fd;
     --accent-color: #1152e3;
     --accent-shadow: rgba(83, 118, 200, 0.32);
-    --button-bg: #4f5555;
+    --button-bg: #404545;
     --border-color: #373A4EFF;
     --press-bg: #22a03f;
     --click-bg: #6fdc6f;
@@ -47,7 +47,7 @@ body {
 .hidden {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 1.2s ease-out, transform 0.8s ease-out;
+    transition: all 0.6s ease-out;
 }
 .show {
     opacity: 1;
@@ -368,3 +368,103 @@ table {
     display: flex;
     top: 10px;
 }
+.intro-advantages {
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+    will-change: transform;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    filter: drop-shadow(-1px 15px 100px var(--accent-shadow));
+}
+.intro-planet {
+    width: 600px;
+    perspective: 1000px;
+}
+.intro-advantages-arrow {
+    height: 3px;
+    border-radius: 5px;
+    background: var(--text-color);
+    display: flex;
+    position: absolute;
+    transition: 0.4s ease-in-out;
+}
+.right-arrow .intro-advantages-point {
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--text-color);
+}
+.right-arrow .intro-advantages-arrow-card {
+    top: 0;
+    right: -300px;
+}
+.right-arrow {
+    width: 350px;
+    top: 340px;
+    right: -180px;
+    transform: rotate(-30deg);
+    perspective: 2000px;
+}
+.left-arrow {
+    width: 350px;
+    left: -210px;
+    bottom: 400px;
+    transform: rotate(-10deg);
+    perspective: 2000px;
+}
+.bottom-arrow {
+    width: 350px;
+    right: -100px;
+    bottom: 230px;
+    transform: rotate(50deg);
+    perspective: 2000px;
+}
+.bottom-arrow .intro-advantages-point {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    top: -7px;
+    left: -7px;
+    border-radius: 50%;
+    background: var(--text-color);
+}
+.bottom-arrow .intro-advantages-arrow-card {
+    transform: rotate(-50deg);
+    bottom: -10px;
+    right: -230px;
+}
+.left-arrow .intro-advantages-point {
+    position: absolute;
+    bottom: -5px;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--text-color);
+}
+.left-arrow .intro-advantages-arrow-card {
+    transform: rotate(10deg);
+    bottom: -105px;
+    left: -250px;
+}
+.intro-advantages-arrow-card {
+    position: absolute;
+    transform: rotate(30deg);
+    background: var(--border-color);
+    border: 3px solid var(--text-color);
+    border-radius: 20px;
+    padding: 15px 20px;
+    width: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    text-align: left;
+    gap: 10px;
+}
+

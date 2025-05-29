@@ -11,7 +11,7 @@ This tests uses [puppeteer](https://github.com/GoogleChrome/puppeteer) to genera
 
 ## Writing new test case
 
-1. Create new file in [test-cases](./test-cases) folder called `test-case-name.js` (`test-case-name` will be used as test case name).
+1. Create new file in [test-cases](test-cases) folder called `test-case-name.js` (`test-case-name` will be used as test case name).
 
 1. Write your test case in that file.
 
@@ -25,7 +25,7 @@ Note that case's file wouldn't prepared/parsed by any bundler/processor (or even
 
 This tests runs against 2 versions of the library - "golden" and "test". Golden is LKG version, test - current tested version of the library.
 
-To run this tests you need use [runner.ts](./runner.ts):
+To run this tests you need use [runner.ts](runner.ts):
 
 ```bash
 npx esno ./runner.ts ./path/to/golden/standalone/module.js ./path/to/test/standalone/module.js

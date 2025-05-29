@@ -95,7 +95,7 @@ export function positionsBox(
 
 Please refer to the following pages for functions defining the default widths of shapes drawn by the library:
 
-- [Crosshair and Grid Lines](./widths/crosshair.md)
-- [Candlesticks](./widths/candlestick.md)
-- [Columns (Histogram)](./widths/columns.md)
-- [Full Bar Width](./widths/full-bar-width.md)
+- [Crosshair and Grid Lines](widths/crosshair.md)
+- [Candlesticks](widths/candlestick.md)
+- [Columns (Histogram)](widths/columns.md)
+- [Full Bar Width](widths/full-bar-width.md)

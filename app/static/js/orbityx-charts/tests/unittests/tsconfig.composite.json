@@ -5,7 +5,7 @@
 		"types": ["node"]
 	},
 	"references": [
-		{ "path": "../../src/tsconfig.composite.json" }
+		{ "path": "../../src/tsconfig.composite.json"}
 	],
 	"include": [
 		"./**/*.ts"

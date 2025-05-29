@@ -1,5 +1,6 @@
 {
-  "include": ["build.config.ts", "src", "__tests__"],
+  "include": [
+    "build.config.ts", "src", "__tests__"],
   "compilerOptions": {
     "outDir": "dist",
     "target": "ES2022",

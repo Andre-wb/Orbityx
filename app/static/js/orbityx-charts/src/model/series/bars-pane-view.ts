@@ -1,7 +1,7 @@
-import { SeriesBarColorer } from '../../model/series-bar-colorer';
-import { SeriesPlotRow } from '../../model/series-data';
-import { SeriesType } from '../../model/series-options';
-import { TimePointIndex } from '../../model/time-data';
+import { SeriesBarColorer } from '../series-bar-colorer';
+import { SeriesPlotRow } from '../series-data';
+import { SeriesType } from '../series-options';
+import { TimePointIndex } from '../time-data';
 import {
 	BarItem,
 	PaneRendererBars,

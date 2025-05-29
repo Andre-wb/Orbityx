@@ -21,7 +21,7 @@ The minimal supported version of [NodeJS](https://nodejs.org/) for development i
 - `npm run lint` - runs lint for the code
 - `npm run test` - runs unit-tests
 
-There are several included e2e tests available which can be run individually. Please have a read through the following document for further information: [/tests/README.md](./tests/README.md)
+There are several included e2e tests available which can be run individually. Please have a read through the following document for further information: [/tests/README.md](tests/README.md)
 
 ## Tips
 

@@ -21,7 +21,7 @@
 		"stripInternal": false,
 		"target": "es2020",
 		"typeRoots": [
-			"./src/typings",
+          "./src/typings",
 			"node_modules/@types"
 		],
 		"types": [

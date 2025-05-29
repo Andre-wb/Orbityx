@@ -1,6 +1,6 @@
 import { ensureNotNull } from '../helpers/assertions';
 
-import { Coordinate } from '../model/coordinate';
+import { Coordinate } from './coordinate';
 
 interface TimeAndPosition {
 	time: number;

@@ -40,7 +40,7 @@ If you'd like to change any option of a series, you could do this in different w
 - **Data format**: [`SingleValueData`](/api/interfaces/SingleValueData.md) or [`WhitespaceData`](/api/interfaces/WhitespaceData.md)
 - **Style options**: a mix of [`SeriesOptionsCommon`](/api/interfaces/SeriesOptionsCommon.md) and [`AreaStyleOptions`](/api/interfaces/AreaStyleOptions.md)
 
-An area chart is basically a colored area between the line connecting all data points and [the time scale](./time-scale.md):
+An area chart is basically a colored area between the line connecting all data points and [the time scale](time-scale.md):
 
 ```js chart replaceThemeConstants
 const chartOptions = { layout: { textColor: CHART_TEXT_COLOR, background: { type: 'solid', color: CHART_BACKGROUND_COLOR } } };
@@ -165,4 +165,4 @@ Lightweight Charts offers the ability to add your own custom series types, also 
 
 Custom series types can be defined by creating a class which implements the [ICustomSeriesPaneView](/api/interfaces/ICustomSeriesPaneView.md) interface. This class defines the rendering code which Lightweight Charts will use to draw the series on the chart. Once a custom series type is defined, it can be added to any chart instance using the [`addCustomSeries()`](/api/interfaces/IChartApi.md#addcustomseries) method, and be used just like any other series.
 
-Please see the [Plugins](./plugins/intro.md) article for more details.
+Please see the [Plugins](plugins/intro.md) article for more details.

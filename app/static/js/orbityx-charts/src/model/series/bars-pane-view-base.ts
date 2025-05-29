@@ -1,15 +1,15 @@
 import { undefinedIfNull } from '../../helpers/strict-type-checks';
 
-import { BarPrice } from '../../model/bar';
-import { IChartModelBase } from '../../model/chart-model';
-import { Coordinate } from '../../model/coordinate';
-import { ISeries } from '../../model/iseries';
-import { PlotRowValueIndex } from '../../model/plot-data';
-import { PriceScale } from '../../model/price-scale';
-import { ISeriesBarColorer } from '../../model/series-bar-colorer';
-import { SeriesPlotRow } from '../../model/series-data';
-import { TimePointIndex } from '../../model/time-data';
-import { ITimeScale } from '../../model/time-scale';
+import { BarPrice } from '../bar';
+import { IChartModelBase } from '../chart-model';
+import { Coordinate } from '../coordinate';
+import { ISeries } from '../iseries';
+import { PlotRowValueIndex } from '../plot-data';
+import { PriceScale } from '../price-scale';
+import { ISeriesBarColorer } from '../series-bar-colorer';
+import { SeriesPlotRow } from '../series-data';
+import { TimePointIndex } from '../time-data';
+import { ITimeScale } from '../time-scale';
 import { BarCandlestickItemBase } from '../../renderers/bars-renderer';
 import { IPaneRenderer } from '../../renderers/ipane-renderer';
 

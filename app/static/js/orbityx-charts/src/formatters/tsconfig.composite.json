@@ -1,7 +1,7 @@
 {
 	"extends": "../../tsconfig.composite.base.json",
 	"references": [
-		{ "path": "../helpers/tsconfig.composite.json" }
+		{ "path": "../helpers/tsconfig.composite.json"}
 	],
 	"include": [
 		"./**/*.ts"

@@ -28,7 +28,7 @@ Below a bar spacing of 4, the library will attempt to use as large a width as po
 
 :::warning
 
-It is expected that candles can overlap slightly at smaller bar spacings (more pronounced on lower resolution devices). This produces a more readable chart. If you need to ensure that bars can never overlap then rather use the widths for [Columns](./columns.md) or the [full bar width](./full-bar-width.md) calculation.
+It is expected that candles can overlap slightly at smaller bar spacings (more pronounced on lower resolution devices). This produces a more readable chart. If you need to ensure that bars can never overlap then rather use the widths for [Columns](columns.md) or the [full bar width](full-bar-width.md) calculation.
 
 :::
 

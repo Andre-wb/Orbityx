@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const wrapper = image.parentElement;
     let lastScrollTop = window.scrollY;
     let rotationX = 0;
-    const maxTilt = 15;
+    const maxTilt = 10;
 
     function updateTilt() {
         const currentScrollTop = window.scrollY;

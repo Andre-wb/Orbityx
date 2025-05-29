@@ -1,8 +1,8 @@
-import { BarPrice } from '../../model/bar';
-import { IChartModelBase } from '../../model/chart-model';
-import { ISeries } from '../../model/iseries';
-import { ISeriesBarColorer } from '../../model/series-bar-colorer';
-import { TimePointIndex } from '../../model/time-data';
+import { BarPrice } from '../bar';
+import { IChartModelBase } from '../chart-model';
+import { ISeries } from '../iseries';
+import { ISeriesBarColorer } from '../series-bar-colorer';
+import { TimePointIndex } from '../time-data';
 import { BaselineFillItem, PaneRendererBaselineArea } from '../../renderers/baseline-renderer-area';
 import { BaselineStrokeItem, PaneRendererBaselineLine } from '../../renderers/baseline-renderer-line';
 import { CompositeRenderer } from '../../renderers/composite-renderer';

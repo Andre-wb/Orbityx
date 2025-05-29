@@ -90,7 +90,7 @@ One of our most requested features, multi-pane support is now available. It allo
 - Independent scale and series management per pane
 - Flexible pane sizing and arrangement options
 
-See [Panes](./panes.md) for more information.
+See [Panes](panes.md) for more information.
 
 #### New Chart Types
 
@@ -106,7 +106,7 @@ See [Panes](./panes.md) for more information.
 - Specialized formatting and interaction handling
 - Ideal for options chain visualization
 
-See [Chart types](./chart-types.mdx) for more information about the [Yield Curve Chart](./chart-types.mdx#yield-curve-chart) and [Options Chart](./chart-types.mdx#options-chart-price-based) types.
+See [Chart types](chart-types.mdx) for more information about the [Yield Curve Chart](chart-types.mdx#yield-curve-chart) and [Options Chart](chart-types.mdx#options-chart-price-based) types.
 
 #### Enhanced Color Support
 
@@ -124,7 +124,7 @@ See [Chart types](./chart-types.mdx) for more information about the [Yield Curve
 
 ### Breaking Changes
 
-- New unified series creation API (see [migration guide](./migrations/from-v4-to-v5.md))
+- New unified series creation API (see [migration guide](migrations/from-v4-to-v5.md))
 - Dropped CommonJS support and updated JS syntax version to ES2020
 - Watermark functionality moved to plugins
 - Series markers implementation changed to plugin system
@@ -151,7 +151,7 @@ We've prepared a comprehensive migration guide to help you upgrade from v4 to v5
 2. Watermarks and Series Markers moving to separate plugins
 3. Plugin system updates
 
-See the full migration guide: [Migrating from v4 to v5](./migrations/from-v4-to-v5.md)
+See the full migration guide: [Migrating from v4 to v5](migrations/from-v4-to-v5.md)
 
 ### Technical Notes
 

@@ -1,11 +1,11 @@
 import { ensureDefined } from '../helpers/assertions';
 import { Mutable } from '../helpers/mutable';
 
-import { CustomData } from '../model/icustom-series';
-import { PlotRow, PlotRowValue } from '../model/plot-data';
-import { SeriesPlotRow } from '../model/series-data';
-import { SeriesType } from '../model/series-options';
-import { TimePointIndex } from '../model/time-data';
+import { CustomData } from './icustom-series';
+import { PlotRow, PlotRowValue } from './plot-data';
+import { SeriesPlotRow } from './series-data';
+import { SeriesType } from './series-options';
+import { TimePointIndex } from './time-data';
 
 import { AreaData, BarData, BaselineData, CandlestickData, HistogramData, isWhitespaceData, LineData, SeriesDataItemTypeMap, WhitespaceData } from './data-consumer';
 import { InternalHorzScaleItem } from './ihorz-scale-behavior';

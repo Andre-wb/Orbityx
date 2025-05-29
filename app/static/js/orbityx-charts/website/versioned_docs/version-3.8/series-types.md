@@ -40,7 +40,7 @@ If you'd like to change any option of a series, you could do this in different w
 - **Data format**: [`SingleValueData`](/api/interfaces/SingleValueData.md) or [`WhitespaceData`](/api/interfaces/WhitespaceData.md)
 - **Style options**: a mix of [`SeriesOptionsCommon`](/api/interfaces/SeriesOptionsCommon.md) and [`AreaStyleOptions`](/api/interfaces/AreaStyleOptions.md)
 
-An area chart is basically a colored area between the line connecting all data points and [the time scale](./time-scale.md):
+An area chart is basically a colored area between the line connecting all data points and [the time scale](time-scale.md):
 
 ```js chart replaceThemeConstants
 const chartOptions = { layout: { textColor: CHART_TEXT_COLOR, background: { type: 'solid', color: CHART_BACKGROUND_COLOR } } };

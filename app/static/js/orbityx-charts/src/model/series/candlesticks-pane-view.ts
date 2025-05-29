@@ -1,6 +1,6 @@
-import { SeriesBarColorer } from '../../model/series-bar-colorer';
-import { SeriesPlotRow } from '../../model/series-data';
-import { TimePointIndex } from '../../model/time-data';
+import { SeriesBarColorer } from '../series-bar-colorer';
+import { SeriesPlotRow } from '../series-data';
+import { TimePointIndex } from '../time-data';
 import {
 	CandlestickItem,
 	PaneRendererCandlesticks,

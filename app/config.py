@@ -57,7 +57,7 @@ COIN_NAME_TO_TICKER = {
 }
 
 class Config:
-    SECRET_KEY = os.getenv('SQLALCHEMY_SECRET_KEY', 'super-secret-key')
+    SECRET_KEY = os.getenv('SQLALCHEMY_SECRET_KEY')
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:pkl59wsMal@localhost:5432/orbityx_db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

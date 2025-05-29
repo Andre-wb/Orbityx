@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, {
-        threshold: 0.1
+        threshold: 0.5
     });
 
     document.querySelectorAll('.hidden').forEach(el => observer.observe(el));

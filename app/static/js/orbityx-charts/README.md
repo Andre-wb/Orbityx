@@ -92,7 +92,7 @@ lineSeries.setData([
 
 ## Development
 
-See [BUILDING.md](./BUILDING.md) for instructions on how to build `lightweight-charts` from source.
+See [BUILDING.md](BUILDING.md) for instructions on how to build `lightweight-charts` from source.
 
 ## License
 

@@ -24,7 +24,7 @@ When logging a bug, please be sure to include the following:
 ## Pull Requests
 
 - Outside contributors may implement enhancement/features only _after an approval_ (label "help wanted") by Lightweight Charts™ project maintainers.
-- For build instructions/suggestions see [BUILDING.md](./BUILDING.md).
+- For build instructions/suggestions see [BUILDING.md](BUILDING.md).
 - After the review process has started, please **don't** use rebase to update the branch, use merge instead.
 
     It's hard to track down the changes you made in previous commits if you do rebasing (and even determine if you really changed something).
@@ -32,7 +32,7 @@ When logging a bug, please be sure to include the following:
 ### Tests
 
 1. Every pull request should have an adequate tests whenever it's possible (we have several [type of tests](./tests/), so you can find what works best for your changes).
-1. If your changes affect painting, then your changes should contain a test case (or test cases) for [graphics tests](./tests/e2e/graphics).
+1. If your changes affect painting, then your changes should contain a test case (or test cases) for [graphics tests](tests/e2e/graphics).
 1. Your pull request should pass CI (except checks marked as "not required" - in this case a reviewer should pay attention to job's artifacts).
 
 ### Git commit messages
