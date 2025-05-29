@@ -4,9 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const logo = document.getElementById('logo');
     const intro_binance_picture = document.getElementById('intro-binance_picture');
 
-    // Критически важная проверка существования элементов
     if (!toggle || !logo || !intro_binance_picture) {
-        console.warn('Один или несколько элементов темы не найдены');
+        console.warn('Theme elements not found on this page');
         return;
     }
 

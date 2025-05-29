@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rotationX -= delta * 0.05;
         rotationX = Math.max(Math.min(rotationX, maxTilt), -maxTilt);
 
-        // Применяем наклон в перспективе
         image.style.transform = `rotateX(${rotationX.toFixed(1)}deg)`;
 
         lastScrollTop = currentScrollTop;

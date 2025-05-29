@@ -1,5 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     const chartContainer = document.getElementById('candlestick-chart');
+    if (!chartContainer) {
+        console.error('Chart container not found!');
+        return;
+    }
+
+    if (typeof LightweightCharts === 'undefined') {
+        console.error('Lightweight Charts library not loaded!');
+        return;
+    }
+
     const css = getComputedStyle(document.documentElement);
     const chart = LightweightCharts.createChart(chartContainer, {
         width: chartContainer.clientWidth,
@@ -14,7 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         timeScale: { timeVisible: true },
     });
-    const series = chart.addCandlestickSeries();
+
+    const series = chart.addCandlestickSeries({
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderVisible: false,
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+    });
+
     let candleData = (window.candlesData || []).map(c => ({
         time: c.timestamp,
         open: c.open,
@@ -53,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .finally(() => loading = false);
         }
     });
+
     window.addEventListener('resize', () => {
         chart.resize(chartContainer.clientWidth, 600);
     });

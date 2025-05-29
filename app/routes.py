@@ -1,19 +1,21 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort, send_file, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, abort, send_file
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, validators
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from .models import db, User, OHLCV
-from .config import Config
 from pycoingecko import CoinGeckoAPI
 from io import BytesIO
 import re, logging, smtplib, os
-from datetime import datetime, date
+from datetime import datetime
 from flask_mail import Mail
 from flask_wtf.file import FileField, FileAllowed
+from . import db, mail
+from .models import User, OHLCV
+from .config import Config
 from app.services.ccxt_service import CCXTService
+
 
 
 # SETUP
