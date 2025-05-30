@@ -3,17 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const html = document.documentElement;
     const logo = document.getElementById('logo');
     const intro_binance_picture = document.getElementById('intro-binance_picture');
-
-    if (!toggle || !logo || !intro_binance_picture) {
-        console.warn('Theme elements not found on this page');
-        return;
-    }
+    const intro_planet = document.getElementById('intro-planet');
 
     const lightLogo = "/static/img/Light-theme-logo.png";
     const darkLogo = "/static/img/Black-theme-logo.png";
 
     const light_binance_picture = "/static/img/light_binance.jpg";
     const dark_binance_picture = "/static/img/dark_binance.jpg";
+
+    const light_planet = "/static/img/intro-planet-light.png";
+    const dark_planet = "/static/img/intro-planet-dark.png";
 
     function switchImage(imgElement, newSrc) {
         if (!imgElement) return;
@@ -33,9 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
         toggle.checked = true;
         logo.src = darkLogo;
         intro_binance_picture.src = dark_binance_picture;
+        intro_planet.src = dark_planet;
     } else {
         logo.src = lightLogo;
-        intro_binance_picture.src = light_binance_picture;
+        if (intro_binance_picture) {
+            intro_binance_picture.src = light_binance_picture;
+        }
+        if (intro_planet) {
+            intro_planet.src = light_planet;
+        }
     }
 
     toggle.addEventListener('change', () => {
@@ -46,6 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
         logo.src = newLogoSrc;
 
         const newBinanceSrc = isDark ? dark_binance_picture : light_binance_picture;
-        switchImage(intro_binance_picture, newBinanceSrc);
+        intro_binance_picture.src = newBinanceSrc;
+
+        const newPlanetSrc = isDark ? dark_planet : light_planet;
+        intro_planet.src = newPlanetSrc;
+        if (logo) {
+            switchImage(newLogoSrc);
+        }
+        if (intro_binance_picture) {
+            switchImage(newBinanceSrc);
+        }
+        if (intro_planet) {
+            switchImage(newPlanetSrc)
+        }
     });
 });

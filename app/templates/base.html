@@ -7,9 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="{{ url_for('static', filename='js/ThemeToggle.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/items_animation.js') }}" defer></script>
-    {% block scripts %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/ThemeToggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/items_animation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/rotate_animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/parallax_animations.js') }}"></script>
 </head>
 <body>
 <header>
