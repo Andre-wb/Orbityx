@@ -3,11 +3,12 @@
 {% block content %}
 
 <h1 class="">Все криптовалюты</h1>
+<div class="table_container">
 <table class="currency_table">
     <thead class="currency_thead">
     <tr id="currency_thead">
-        <th>#</th>
-        <th>Название</th>
+        <th class="number_t">#</th>
+        <th class="name_t">Название</th>
         <th>Цена</th>
         <th>% 1 ч</th>
         <th>% 24 ч</th>
@@ -52,4 +53,5 @@
     {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

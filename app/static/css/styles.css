@@ -6,7 +6,9 @@
     padding: 0;
     outline: none;
 }
-
+html {
+    overflow-x: hidden;
+}
 :root {
     --bg-color: #fff;
     --text-color: #0c0c0c;
@@ -148,16 +150,56 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 15px;
 }
 
 .currency_table {
-    width: 80vw;
     font-size: 18px;
     text-align: center;
+    position: relative;
 }
-.name_th {
-    text-align: left;
-    padding-left: 100px;
+@media (min-width: 1024px) {
+    .table_container {
+        width: 80vw;
+    }
+    .name_th {
+        text-align: left;
+        padding-left: 100px;
+    }
+}
+@media (max-width: 1024px) {
+    .table_container {
+        max-width: 100vw;
+        overflow-x: auto;
+    }
+    .currency_table {
+        border-collapse: collapse;
+        font-size: 15px;
+    }
+    .number_th, .name_th {
+        position: sticky;
+        left: 0;
+        z-index: 100;
+        background-color: var(--bg-color);
+        padding-right: 0;
+        padding-left: 0;
+        width: 50px;
+        transition: 0.4s ease-in-out;
+    }
+    .name_th,
+    .name_t {
+        filter: drop-shadow(4px 0 4px rgba(0, 0, 0, 0.49));
+    }
+    .number_t,
+    .name_t {
+        position: sticky;
+        left: 0;
+        z-index: 100;
+        background-color: var(--bg-color);
+    }
+    .name_th {
+        padding-right: 20px;
+    }
 }
 .coin_name {
     gap: 10px;
@@ -337,11 +379,40 @@ table {
     font-weight: bold;
     font-style: italic;
     margin-top: 5vh;
+    text-align: center;
+}
+@media (max-width: 1400px) {
+    .intro-h1 {
+        font-size: 40px;
+    }
+}
+@media (max-width: 1024px) {
+    .intro-h1 {
+        font-size: 30px;
+    }
+}
+@media (max-width: 720px) {
+    .intro-h1 {
+        text-align: center;
+        width: 90%;
+    }
+    .intro-h4 {
+        text-align: center;
+        font-weight: 200;
+    }
+    .intro-start-img {
+        width: 100%;
+        position: relative;
+        top: 5vh;
+    }
+
 }
 .intro-h4 {
-    font-weight: bold;
+    @media (min-width: 720px) {
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
     font-style: italic;
-    letter-spacing: 2px;
     transition-delay: 0.3s;
 }
 .image-wrapper {
@@ -356,7 +427,9 @@ table {
 }
 
 .intro-start-img {
-    width: 60vw;
+    @media (min-width: 720px) {
+        width: 60vw;
+    }
     transform-style: preserve-3d;
     transition: transform 0.1s ease-out;
     border-radius: 12px;
