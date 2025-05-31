@@ -31,8 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
         html.classList.add('dark');
         toggle.checked = true;
         logo.src = darkLogo;
-        intro_binance_picture.src = dark_binance_picture;
-        intro_planet.src = dark_planet;
+        if (intro_binance_picture) {
+            intro_binance_picture.src = dark_binance_picture;
+        }
+        if (intro_planet) {
+            intro_planet.src = dark_planet;
+        }
     } else {
         logo.src = lightLogo;
         if (intro_binance_picture) {

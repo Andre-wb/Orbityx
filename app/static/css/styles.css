@@ -150,7 +150,9 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 15px;
+    @media (max-width: 720px) {
+        padding: 15px;
+    }
 }
 
 .currency_table {
@@ -264,26 +266,22 @@ a.link-register:visited {
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
     transition: 0.4s ease-in-out;
 }
-
 .form-container h2 {
     text-align: center;
     margin-bottom: 25px;
     color: var(--text-color);
     transition: 0.4s ease-in-out;
 }
-
 .form-group {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     transition: 0.4s ease-in-out;
 }
-
 .form-group label {
     margin-bottom: 6px;
     font-weight: 600;
 }
-
 .form-control {
     padding: 10px;
     border: 1px solid #aaa;
@@ -293,7 +291,6 @@ a.link-register:visited {
     color: #000;
     transition: 0.4s ease-in-out;
 }
-
 .dark .form-control {
     background-color: #ffffff;
     color: #000;
@@ -454,6 +451,13 @@ table {
 }
 .intro-planet {
     width: 600px;
+    position: relative;
+    @media (max-width: 1700px) {
+        width: 500px;
+    }
+    @media (max-width: 1250px) {
+        top: -250px;
+    }
     perspective: 1000px;
 }
 .intro-advantages-arrow {
@@ -479,22 +483,37 @@ table {
 }
 .right-arrow {
     width: 350px;
-    top: 340px;
-    right: -180px;
+    top: 320px;
+    right: -200px;
+    @media (max-width: 1500px) {
+        width: 200px;
+        top: 360px;
+        right: -50px;
+    }
     transform: rotate(-30deg);
     perspective: 2000px;
 }
 .left-arrow {
     width: 350px;
-    left: -210px;
-    bottom: 400px;
+    left: -230px;
+    bottom: 380px;
+    @media (max-width: 1500px) {
+        width: 200px;
+        left: -60px;
+        bottom: 390px;
+    }
     transform: rotate(-10deg);
     perspective: 2000px;
 }
 .bottom-arrow {
     width: 350px;
     right: -100px;
-    bottom: 230px;
+    bottom: 210px;
+    @media (max-width: 1500px) {
+        width: 200px;
+        right: -10px;
+        bottom: 280px;
+    }
     transform: rotate(50deg);
     perspective: 2000px;
 }
