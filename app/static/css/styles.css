@@ -478,43 +478,67 @@ table {
     background: var(--text-color);
 }
 .right-arrow .intro-advantages-arrow-card {
-    top: 0;
-    right: -300px;
+    @media (min-width: 1250px) {
+        top: 0;
+        right: -300px;
+    }
+    @media (max-width: 1250px) {
+        transform: rotate(-60deg);
+        top: -50px;
+        left: 40px;
+
+    }
 }
 .right-arrow {
     width: 350px;
     top: 320px;
     right: -200px;
+    transform: rotate(-30deg);
     @media (max-width: 1500px) {
         width: 200px;
         top: 360px;
         right: -50px;
     }
-    transform: rotate(-30deg);
+    @media (max-width: 1250px) {
+        transform: rotate(60deg);
+        top: 420px;
+        right: 0;
+    }
     perspective: 2000px;
 }
 .left-arrow {
     width: 350px;
     left: -230px;
     bottom: 380px;
+    transform: rotate(-10deg);
     @media (max-width: 1500px) {
         width: 200px;
         left: -60px;
         bottom: 390px;
     }
-    transform: rotate(-10deg);
+    @media (max-width: 1250px) {
+        transform: rotate(-60deg);
+        left: 0;
+        top: 420px;
+    }
     perspective: 2000px;
 }
 .bottom-arrow {
     width: 350px;
     right: -100px;
     bottom: 210px;
+    transform: rotate(50deg);
     @media (max-width: 1500px) {
         width: 200px;
         right: -10px;
         bottom: 280px;
     }
-    transform: rotate(50deg);
+    @media (max-width: 1250px) {
+        width: 350px;
+        right: 80px;
+        top: 550px;
+        transform: rotate(85deg);
+    }
     perspective: 2000px;
 }
 .bottom-arrow .intro-advantages-point {
@@ -530,6 +554,11 @@ table {
     transform: rotate(-50deg);
     bottom: -10px;
     right: -230px;
+    @media (max-width: 1250px) {
+        transform: rotate(-85deg);
+        right: -200px;
+        bottom: -50px;
+    }
 }
 .left-arrow .intro-advantages-point {
     position: absolute;
@@ -544,6 +573,11 @@ table {
     transform: rotate(10deg);
     bottom: -105px;
     left: -250px;
+    @media (max-width: 1250px) {
+        transform: rotate(60deg);
+        right: -200px;
+        bottom: -50px;
+    }
 }
 .intro-advantages-arrow-card {
     position: absolute;
@@ -561,4 +595,63 @@ table {
 }
 .right-arrow, .left-arrow, .bottom-arrow .hidden {
     opacity: 1;
+}
+@media (min-width: 720px) {
+    .menu-button, .line{
+        display: none !important;
+        position: absolute;
+        width: 0;
+    }
+}
+@media (max-width: 720px) {
+    #navigation {
+        display: grid;
+        position: absolute;
+        height: 100vh;
+        transform: translateX(300%);
+        transition: transform 0.5s ease-out;
+        background: var(--accent-shadow);
+        opacity: 1;
+    }
+    #navigation.active {
+        transform: translateX(0);
+    }
+}
+.menu-button {
+    display: grid;
+    place-items: center;
+    position: relative;
+    width: 70px;
+    height: 40px;
+    border: none;
+    background: none;
+}
+.top-line, .bottom-line, .center-line {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--accent-color);
+    transition: 0.5s;
+}
+.top-line {
+    position: absolute;
+    top: 0;
+}
+.bottom-line {
+    position: absolute;
+    top: 90%;
+}
+.center-line {
+    position: relative;
+}
+.center-line.active {
+    width: 0;
+}
+.top-line.active {
+    transform: rotate(45deg);
+    top: 20px;
+}
+.bottom-line.active {
+    transform: rotate(-45deg);
+    top: 20px;
 }
