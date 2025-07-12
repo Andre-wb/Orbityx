@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!clean.length) return;
 
                 earliest   = clean[0].time * 1000;
-                candleData = [...clean, ...candleData].slice(-2000); // keep ≤2 000
+                candleData = [...clean, ...candleData];
                 series.setData(candleData);
             })
             .catch(err => console.error('Error fetching candles:', err))
