@@ -34,7 +34,7 @@ class OHLCV(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     symbol = db.Column(db.String)
     timeframe = db.Column(db.String)
-    timestamp = db.Column(db.BigInteger)
+    timestamp = db.Column(db.BigInteger, nullable=False)
     datetime = db.Column(db.String)
     open = db.Column(db.Float)
     high = db.Column(db.Float)

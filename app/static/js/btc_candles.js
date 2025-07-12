@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const seen = new Set();
 
         for (const r of rows) {
+            if (r.timestamp === null || r.open === null || r.high === null ||
+                r.low === null || r.close === null) {
+                bad.push(r);
+                continue;
+            }
             const t = Number(r.timestamp);
             const o = Number(r.open);
             const h = Number(r.high);
@@ -82,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
     chart.timeScale().subscribeVisibleTimeRangeChange(range => {
         if (loading || !range?.from) return;
         if (range.from * 1000 >= earliest + 60_000) return;
+// Convert to milliseconds correctly
+        const visibleStart = range.from * 1000;
 
+        // Check if we need earlier data
+        if (visibleStart >= earliest) return;
         loading = true;
         const end   = earliest;
         const start = end - 3_600_000;

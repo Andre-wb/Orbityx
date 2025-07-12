@@ -228,7 +228,7 @@ def get_color(name):
 
 #CANDLES
 
-@main.route('/btc/chart')
+@main.route('/btc/chart', methods=['GET', 'POST'])
 def btc_chart():
     form = EmptyForm()
     entries = (OHLCV.query
@@ -252,7 +252,7 @@ def btc_chart():
                            candles=candles,
                            form=form)
 
-@main.route('/load/full_data', methods=['POST'])
+@main.route('/load/full_data', methods=['GET', 'POST'])
 def load_full_data():
     service = CCXTService()
     symbol = 'BTC/USDT'
@@ -278,7 +278,7 @@ def load_full_data():
     flash(f'Загружена полная история: {len(all_candles)} свечей.', 'info')
     return redirect(url_for('main.btc_chart'))
 
-@main.route('/api/candles')
+@main.route('/api/candles', methods=['GET', 'POST'])
 def get_candles():
     symbol = request.args.get('symbol', 'BTC/USDT')
     try:
