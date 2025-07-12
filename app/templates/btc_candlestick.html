@@ -13,5 +13,7 @@
 <div id="candlestick-chart" style="width:80vw; height:600px;"></div>
 <script>
     window.candlesData = {{ candles | tojson }};
+    console.log('Initial candles:', window.candlesData);
+    console.log('Candle count:', window.candlesData.length);
 </script>
 {% endblock %}

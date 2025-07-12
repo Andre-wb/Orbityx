@@ -33,7 +33,7 @@ def introduce_page():
 
 @main.route('/base')
 def base_page():
-    return render_template('base.html')
+    return render_template('basic.html')
 
 @main.route('/currency')
 def crypto_currency_page():
