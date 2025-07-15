@@ -1,242 +1,349 @@
-const canvas = document.getElementById('chartCanvas');
-const ctx = canvas.getContext('2d');
+export default class ChartEngine {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
 
-// Chart color and layout configuration
-const config = {
-    theme: localStorage.getItem('theme') === 'dark' ? 'dark' : 'light', // Read current theme
+        // Chart configuration
+        this.config = {
+            theme: localStorage.getItem('theme') === 'dark' ? 'dark' : 'light',
+            darkTheme: {
+                upColor: 'rgba(46, 204, 113, 0.8)',
+                downColor: 'rgba(231, 76, 60, 0.8)',
+                wickColor: 'rgba(149, 165, 166, 0.8)',
+                bgColor: 'rgba(20, 25, 40, 1)',
+                gridColor: 'rgba(127, 140, 141, 0.2)',
+                textColor: 'rgba(236, 240, 241, 0.9)',
+                priceLineColor: 'rgba(52, 152, 219, 0.7)'
+            },
+            lightTheme: {
+                upColor: 'rgba(39, 174, 96, 0.7)',
+                downColor: 'rgba(192, 57, 43, 0.7)',
+                wickColor: 'rgba(100, 100, 100, 0.4)',
+                bgColor: 'rgba(255, 255, 255, 1)',
+                gridColor: 'rgba(200, 200, 200, 0.2)',
+                textColor: 'rgba(50, 50, 50, 0.9)',
+                priceLineColor: 'rgba(41, 128, 185, 0.5)'
+            },
+            candleWidth: 10,
+            candleSpacing: 3,
+            margin: { top: 30, right: 20, bottom: 50, left: 60 }
+        };
 
-    darkTheme: {
-        upColor: 'rgba(46, 204, 113, 0.8)',
-        downColor: 'rgba(231, 76, 60, 0.8)',
-        wickColor: 'rgba(149, 165, 166, 0.8)',
-        bgColor: 'rgba(20, 25, 40, 1)',
-        gridColor: 'rgba(127, 140, 141, 0.2)',
-        textColor: 'rgba(236, 240, 241, 0.9)',
-        axisColor: 'rgba(236, 240, 241, 0.6)',
-        priceLineColor: 'rgba(52, 152, 219, 0.7)'
-    },
+        // Chart state
+        this.state = {
+            data: [],
+            visibleData: [],
+            scaleX: 1,
+            offsetX: 0,
+            minPrice: 0,
+            maxPrice: 0,
+            width: 0,
+            height: 0,
+            currentPrice: 0,
+            isDragging: false,   // For panning
+            dragStartX: 0        // Panning start position
+        };
 
-    lightTheme: {
-        upColor: 'rgba(39, 174, 96, 0.7)',
-        downColor: 'rgba(192, 57, 43, 0.7)',
-        wickColor: 'rgba(100, 100, 100, 0.4)',
-        bgColor: 'rgba(255, 255, 255, 1)',
-        gridColor: 'rgba(200, 200, 200, 0.2)',
-        textColor: 'rgba(50, 50, 50, 0.9)',
-        axisColor: 'rgba(120, 120, 120, 0.5)',
-        priceLineColor: 'rgba(41, 128, 185, 0.5)'
-    },
-
-    candleWidth: 10,
-    candleSpacing: 3,
-    margin: { top: 30, right: 20, bottom: 50, left: 60 }
-};
-
-// Return the current color scheme
-function getColors() {
-    return config.theme === 'dark' ? config.darkTheme : config.lightTheme;
-}
-
-// Chart state: data and view settings
-const state = {
-    data: [],
-    visibleData: [],
-    scaleX: 1,
-    offsetX: 0,
-    minPrice: 0,
-    maxPrice: 0,
-    width: 0,
-    height: 0,
-    currentPrice: 0
-};
-
-// Initialize chart rendering
-async function initChart() {
-    resizeCanvas();
-    await fetchData();
-    setupEventListeners();
-}
-
-// Adjust canvas size to container
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-    state.width = canvas.width;
-    state.height = canvas.height;
-}
-
-// Fetch candle data from API (replace this with actual backend)
-async function fetchData() {
-    const res = await fetch('/api/candles');
-    const candles = await res.json();
-    state.data = candles;
-    state.currentPrice = candles[candles.length - 1].close;
-    updateVisibleData();
-    drawChart();
-}
-
-// Filter and prepare visible candles to draw
-function updateVisibleData() {
-    const visibleWidth = state.width - config.margin.left - config.margin.right;
-    const candleSpace = config.candleWidth + config.candleSpacing;
-    const visibleCandleCount = Math.floor(visibleWidth / (candleSpace * state.scaleX));
-    const startIndex = Math.max(0, state.data.length - visibleCandleCount - Math.floor(state.offsetX));
-    const endIndex = Math.min(state.data.length, startIndex + visibleCandleCount);
-    state.visibleData = state.data.slice(startIndex, endIndex);
-    state.minPrice = Infinity;
-    state.maxPrice = -Infinity;
-    for (const candle of state.visibleData) {
-        if (candle.low < state.minPrice) state.minPrice = candle.low;
-        if (candle.high > state.maxPrice) state.maxPrice = candle.high;
+        // Bind event handlers
+        this.handleResize = this.handleResize.bind(this);
+        this.handleWheel = this.handleWheel.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
     }
-    const padding = (state.maxPrice - state.minPrice) * 0.05;
-    state.minPrice -= padding;
-    state.maxPrice += padding;
-}
 
-// Convert price to vertical Y coordinate
-function priceToY(price) {
-    const chartHeight = state.height - config.margin.top - config.margin.bottom;
-    return state.height - config.margin.bottom - ((price - state.minPrice) / (state.maxPrice - state.minPrice)) * chartHeight;
-}
-
-// Convert candle index to horizontal X coordinate
-function indexToX(index) {
-    const candleSpace = (config.candleWidth + config.candleSpacing) * state.scaleX;
-    return config.margin.left + index * candleSpace;
-}
-
-// Master draw function
-function drawChart() {
-    ctx.clearRect(0, 0, state.width, state.height);
-    drawBackground();
-    drawGrid();
-    drawCandles();
-    drawCurrentPrice();
-}
-
-// Fill background
-function drawBackground() {
-    const theme = getColors();
-    ctx.fillStyle = theme.bgColor;
-    ctx.fillRect(config.margin.left, config.margin.top, state.width - config.margin.left - config.margin.right, state.height - config.margin.top - config.margin.bottom);
-}
-
-// Draw vertical & horizontal grid lines
-function drawGrid() {
-    const theme = getColors();
-    ctx.strokeStyle = theme.gridColor;
-    ctx.lineWidth = 1;
-    const verticalLineCount = 10;
-    for (let i = 0; i <= verticalLineCount; i++) {
-        const x = config.margin.left + (i / verticalLineCount) * (state.width - config.margin.left - config.margin.right);
-        ctx.beginPath();
-        ctx.moveTo(x, config.margin.top);
-        ctx.lineTo(x, state.height - config.margin.bottom);
-        ctx.stroke();
+    // Get current color scheme
+    getColors() {
+        return this.config.theme === 'dark'
+            ? this.config.darkTheme
+            : this.config.lightTheme;
     }
-    const horizontalLineCount = 8;
-    for (let i = 0; i <= horizontalLineCount; i++) {
-        const y = config.margin.top + (i / horizontalLineCount) * (state.height - config.margin.top - config.margin.bottom);
-        ctx.beginPath();
-        ctx.moveTo(config.margin.left, y);
-        ctx.lineTo(state.width - config.margin.right, y);
-        ctx.stroke();
+
+    // Initialize chart engine
+    init(dataManager) {
+        this.dataManager = dataManager;
+        this.setData(this.dataManager.getData());
+        this.resizeCanvas();
+        this.setupEventListeners();
+        this.draw();
     }
-    ctx.fillStyle = theme.textColor;
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i <= horizontalLineCount; i++) {
-        const price = state.minPrice + (state.maxPrice - state.minPrice) * (1 - i / horizontalLineCount);
-        const y = config.margin.top + (i / horizontalLineCount) * (state.height - config.margin.top - config.margin.bottom);
-        ctx.fillText('$' + price.toFixed(0), config.margin.left - 10, y);
+
+    // Update with new data
+    update() {
+        this.setData(this.dataManager.getData());
     }
-}
 
-// Draw candlesticks
-function drawCandles() {
-    const theme = getColors();
-    for (let i = 0; i < state.visibleData.length; i++) {
-        const candle = state.visibleData[i];
-        const x = indexToX(i);
-        const centerX = x + (config.candleWidth * state.scaleX) / 2;
-        const openY = priceToY(candle.open);
-        const closeY = priceToY(candle.close);
-        const highY = priceToY(candle.high);
-        const lowY = priceToY(candle.low);
-        const isUp = candle.close > candle.open;
-        const bodyTop = Math.min(openY, closeY);
-        const bodyHeight = Math.abs(openY - closeY);
-
-        // Wick
-        ctx.strokeStyle = theme.wickColor;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(centerX, highY);
-        ctx.lineTo(centerX, lowY);
-        ctx.stroke();
-
-        // Body
-        ctx.fillStyle = isUp ? theme.upColor : theme.downColor;
-        ctx.fillRect(x, bodyTop, config.candleWidth * state.scaleX, bodyHeight);
-        ctx.strokeStyle = isUp ? theme.upColor : theme.downColor;
-        ctx.strokeRect(x, bodyTop, config.candleWidth * state.scaleX, bodyHeight);
+    // Reset zoom and pan
+    resetView() {
+        this.state.scaleX = 1;
+        this.state.offsetX = 0;
+        this.updateVisibleData();
+        this.draw();
     }
-}
 
-// Draw dashed line at current price
-function drawCurrentPrice() {
-    const theme = getColors();
-    const y = priceToY(state.currentPrice);
-    ctx.strokeStyle = theme.priceLineColor;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 3]);
-    ctx.beginPath();
-    ctx.moveTo(config.margin.left, y);
-    ctx.lineTo(state.width - config.margin.right, y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-}
+    // Apply theme
+    applyTheme(theme) {
+        this.config.theme = theme;
+        this.draw();
+    }
 
-// Zoom and resize controls
-function setupEventListeners() {
-    window.addEventListener('resize', () => {
-        resizeCanvas();
-        updateVisibleData();
-        drawChart();
-    });
+    // Resize canvas to fit container
+    resizeCanvas() {
+        const container = this.canvas.parentElement;
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
+        this.state.width = this.canvas.width;
+        this.state.height = this.canvas.height;
+        this.updateVisibleData();
+    }
 
-    document.getElementById('zoomIn').addEventListener('click', () => {
-        state.scaleX *= 1.2;
-        updateVisibleData();
-        drawChart();
-    });
+    // Handle window resize
+    handleResize() {
+        this.resizeCanvas();
+        this.draw();
+    }
 
-    document.getElementById('zoomOut').addEventListener('click', () => {
-        state.scaleX /= 1.2;
-        updateVisibleData();
-        drawChart();
-    });
+    // Set chart data
+    setData(data) {
+        this.state.data = data;
+        this.state.currentPrice = data.length ? data[data.length - 1].close : 0;
+        this.updateVisibleData();
+        this.draw();
+    }
 
-    document.getElementById('resetView').addEventListener('click', () => {
-        state.scaleX = 1;
-        state.offsetX = 0;
-        updateVisibleData();
-        drawChart();
-    });
+    // Calculate visible candles
+    updateVisibleData() {
+        const { left, right } = this.config.margin;
+        const visibleW = this.state.width - left - right;
+        const space = this.config.candleWidth + this.config.candleSpacing;
+        const count = Math.floor(visibleW / (space * this.state.scaleX));
+        const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX));
+        const end = Math.min(this.state.data.length, start + count);
 
-    canvas.addEventListener('wheel', (e) => {
+        this.state.visibleData = this.state.data.slice(start, end);
+
+        // Handle empty data case
+        if (this.state.visibleData.length === 0) {
+            this.state.minPrice = 0;
+            this.state.maxPrice = 0;
+            return;
+        }
+
+        // Calculate price range
+        this.state.minPrice = Infinity;
+        this.state.maxPrice = -Infinity;
+        this.state.visibleData.forEach(candle => {
+            this.state.minPrice = Math.min(this.state.minPrice, candle.low);
+            this.state.maxPrice = Math.max(this.state.maxPrice, candle.high);
+        });
+
+        // Add padding
+        const pad = (this.state.maxPrice - this.state.minPrice) * 0.05;
+        this.state.minPrice -= pad;
+        this.state.maxPrice += pad;
+    }
+
+    // Convert price to Y coordinate
+    priceToY(price) {
+        const h = this.state.height - this.config.margin.top - this.config.margin.bottom;
+        return this.state.height - this.config.margin.bottom -
+            ((price - this.state.minPrice) / (this.state.maxPrice - this.state.minPrice)) * h;
+    }
+
+    // Convert index to X coordinate
+    indexToX(index) {
+        const space = (this.config.candleWidth + this.config.candleSpacing) * this.state.scaleX;
+        return this.config.margin.left + index * space;
+    }
+
+    // Main draw function
+    draw() {
+        this.ctx.clearRect(0, 0, this.state.width, this.state.height);
+        this.drawBackground();
+        this.drawGrid();
+        this.drawCandles();
+        this.drawCurrentPrice();
+    }
+
+    // Draw chart background
+    drawBackground() {
+        const theme = this.getColors();
+        const m = this.config.margin;
+        this.ctx.fillStyle = theme.bgColor;
+        this.ctx.fillRect(
+            m.left,
+            m.top,
+            this.state.width - m.left - m.right,
+            this.state.height - m.top - m.bottom
+        );
+    }
+
+    // Draw grid and price labels
+    drawGrid() {
+        const theme = this.getColors();
+        const { left, right, top, bottom } = this.config.margin;
+
+        // Vertical grid lines
+        this.ctx.strokeStyle = theme.gridColor;
+        this.ctx.lineWidth = 1;
+        for (let i = 0; i <= 10; i++) {
+            const x = left + (i/10) * (this.state.width - left - right);
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, top);
+            this.ctx.lineTo(x, this.state.height - bottom);
+            this.ctx.stroke();
+        }
+
+        // Horizontal grid lines
+        this.ctx.fillStyle = theme.textColor;
+        this.ctx.font = '12px Arial';
+        this.ctx.textAlign = 'right';
+        this.ctx.textBaseline = 'middle';
+
+        for (let i = 0; i <= 8; i++) {
+            const y = top + (i/8) * (this.state.height - top - bottom);
+
+            // Grid line
+            this.ctx.beginPath();
+            this.ctx.moveTo(left, y);
+            this.ctx.lineTo(this.state.width - right, y);
+            this.ctx.stroke();
+
+            // Price label
+            const price = this.state.minPrice +
+                (this.state.maxPrice - this.state.minPrice) * (1 - i/8);
+
+            this.ctx.fillText(
+                '$' + price.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }),
+                left - 10,
+                y
+            );
+        }
+    }
+
+    // Draw candlesticks
+    drawCandles() {
+        this.ctx.save(); // Save context state
+
+        const theme = this.getColors();
+        for (let i = 0; i < this.state.visibleData.length; i++) {
+            const candle = this.state.visibleData[i];
+            const x = this.indexToX(i);
+            const centerX = x + (this.config.candleWidth * this.state.scaleX)/2;
+            const openY = this.priceToY(candle.open);
+            const closeY = this.priceToY(candle.close);
+            const highY = this.priceToY(candle.high);
+            const lowY = this.priceToY(candle.low);
+            const isUp = candle.close > candle.open;
+            const bodyTop = Math.min(openY, closeY);
+            const bodyHeight = Math.abs(openY - closeY);
+
+            // Wick
+            this.ctx.strokeStyle = theme.wickColor;
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, highY);
+            this.ctx.lineTo(centerX, lowY);
+            this.ctx.stroke();
+
+            // Body
+            this.ctx.fillStyle = isUp ? theme.upColor : theme.downColor;
+            this.ctx.fillRect(x, bodyTop, this.config.candleWidth * this.state.scaleX, bodyHeight);
+            this.ctx.strokeStyle = isUp ? theme.upColor : theme.downColor;
+            this.ctx.strokeRect(x, bodyTop, this.config.candleWidth * this.state.scaleX, bodyHeight);
+        }
+
+        this.ctx.restore(); // Restore context state
+    }
+
+    // Draw current price line
+    drawCurrentPrice() {
+        const theme = this.getColors();
+        const y = this.priceToY(this.state.currentPrice);
+
+        this.ctx.strokeStyle = theme.priceLineColor;
+        this.ctx.lineWidth = 1;
+        this.ctx.setLineDash([5, 3]);
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.config.margin.left, y);
+        this.ctx.lineTo(this.state.width - this.config.margin.right, y);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+    }
+
+    // Setup event listeners
+    setupEventListeners() {
+        window.addEventListener('resize', this.handleResize);
+
+        // Zoom controls
+        document.getElementById('zoomIn').addEventListener('click', () => this.zoomIn());
+        document.getElementById('zoomOut').addEventListener('click', () => this.zoomOut());
+        document.getElementById('resetView').addEventListener('click', () => this.resetView());
+
+        // Mouse wheel zoom
+        this.canvas.addEventListener('wheel', this.handleWheel);
+
+        // Panning controls
+        this.canvas.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas.addEventListener('mouseleave', this.handleMouseUp);
+    }
+
+    // Handle mouse wheel zoom
+    handleWheel(e) {
         e.preventDefault();
         const zoomIntensity = 0.1;
         const zoomFactor = 1 + (e.deltaY > 0 ? -zoomIntensity : zoomIntensity);
-        state.scaleX *= zoomFactor;
-        state.scaleX = Math.max(0.5, Math.min(5, state.scaleX));
-        updateVisibleData();
-        drawChart();
-    });
-}
+        this.state.scaleX = Math.max(0.5, Math.min(5, this.state.scaleX * zoomFactor));
+        this.updateVisibleData();
+        this.draw();
+    }
 
-// Start rendering when page is loaded
-window.addEventListener('load', initChart);
+    // Zoom in
+    zoomIn() {
+        this.state.scaleX *= 1.2;
+        this.state.scaleX = Math.min(5, this.state.scaleX);
+        this.updateVisibleData();
+        this.draw();
+    }
+
+    // Zoom out
+    zoomOut() {
+        this.state.scaleX /= 1.2;
+        this.state.scaleX = Math.max(0.5, this.state.scaleX);
+        this.updateVisibleData();
+        this.draw();
+    }
+
+    // Handle mouse down for panning
+    handleMouseDown(e) {
+        this.state.isDragging = true;
+        this.state.dragStartX = e.clientX;
+        this.canvas.style.cursor = 'grabbing';
+    }
+
+    // Handle mouse move for panning
+    handleMouseMove(e) {
+        if (!this.state.isDragging) return;
+
+        const deltaX = e.clientX - this.state.dragStartX;
+        this.state.dragStartX = e.clientX;
+
+        // Adjust offset based on mouse movement and scale
+        this.state.offsetX += deltaX / (this.config.candleWidth + this.config.candleSpacing) / this.state.scaleX;
+
+        this.updateVisibleData();
+        this.draw();
+    }
+
+    // Handle mouse up for panning
+    handleMouseUp() {
+        if (this.state.isDragging) {
+            this.state.isDragging = false;
+            this.canvas.style.cursor = 'default';
+        }
+    }
+}
