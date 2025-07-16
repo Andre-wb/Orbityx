@@ -1,36 +1,44 @@
-import api from '../services/api';
-import { parseISO, format } from '../utils/date';
+import api from '../services/api.js';
+import { parseISO } from '../utils/date.js';
 
-class dataManager {
+class DataManager {
     constructor() {
-        this.cache = [];
-        this.subscribers
+        this._cache = [];
+        this._subscribers = [];
     }
-    async loadCandles(symbol,interval) {
+
+    async loadCandles(symbol, interval) {
         const raw = await api.fetchCandles(symbol, interval);
         this._cache = raw.map(item => ({
             timestamp: parseISO(item.timestamp),
-            open:   Number(item.open),
-            high:   Number(item.high),
-            low:    Number(item.low),
-            close:  Number(item.close),
+            open: Number(item.open),
+            high: Number(item.high),
+            low: Number(item.low),
+            close: Number(item.close),
             volume: Number(item.volume)
         }));
         this._cache.sort((a, b) => a.timestamp - b.timestamp);
         return [...this._cache];
     }
-    getSlice(start, count){
-        const end = start + count;
-        return this._cache.slice(start, end)
+
+    getData() {
+        return [...this._cache];
     }
-    subscribe(callback){
-        if (typeof callback === 'function'){
+
+    getSlice(start, count) {
+        return this._cache.slice(start, start + count);
+    }
+
+    subscribe(callback) {
+        if (typeof callback === 'function') {
             this._subscribers.push(callback);
         }
     }
+
     _notify(candle) {
         this._subscribers.forEach(cb => cb(candle));
     }
+
     attachSocket(socket) {
         socket.onmessage = event => {
             const data = JSON.parse(event.data);
@@ -44,7 +52,8 @@ class dataManager {
             };
             this._cache.push(candle);
             this._notify(candle);
-        }
+        };
     }
 }
-export default dataManager;
+
+export default new DataManager();
