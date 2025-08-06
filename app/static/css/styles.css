@@ -72,11 +72,14 @@ header {
     transition: 0.4s ease-in-out;
     gap: 10px
 }
-header nav {
+#navigation {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    z-index: 11;
+    left: 0;
+    right: 0;
 }
 .register-link {
     background: var(--accent-color);
@@ -89,14 +92,14 @@ header nav {
     background: #fff;
     color: var(--accent-color);
 }
-nav a {
+#navigation a {
     color: var(--text-color);
     font-weight: 600;
     transition: color 0.4s ease;
     letter-spacing: 1px;
 }
 
-nav a:hover {
+#navigation a:hover {
     color: var(--accent-color);
 }
 .binance-links {
@@ -181,7 +184,7 @@ main {
     .number_th, .name_th {
         position: sticky;
         left: 0;
-        z-index: 100;
+        z-index: 10;
         background-color: var(--bg-color);
         padding-right: 0;
         padding-left: 0;
@@ -196,7 +199,7 @@ main {
     .name_t {
         position: sticky;
         left: 0;
-        z-index: 100;
+        z-index: 10;
         background-color: var(--bg-color);
     }
     .name_th {
@@ -605,16 +608,35 @@ table {
 }
 @media (max-width: 720px) {
     #navigation {
-        display: grid;
-        position: absolute;
-        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: end;
+        position: fixed;
+        height: 100%;
+        padding: 40vh 10px 15px;
+        bottom: 0;
         transform: translateX(300%);
         transition: transform 0.5s ease-out;
-        background: var(--accent-shadow);
+        background: var(--border-color);
         opacity: 1;
+        gap: 15px;
     }
     #navigation.active {
         transform: translateX(0);
+    }
+    #navigation div {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .register-link {
+        height: 40px;
+        display: grid;
+        place-items: center;
+    }
+    .binance-links {
+        width: 100%;
     }
 }
 .menu-button {
@@ -625,6 +647,7 @@ table {
     height: 40px;
     border: none;
     background: none;
+    z-index: 20;
 }
 .top-line, .bottom-line, .center-line {
     width: 100%;

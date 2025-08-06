@@ -3,7 +3,7 @@ export function initLegend(symbol = 'BTC/USDT') {
     const symbolNameEl   = document.querySelector('.symbol-name');
     const symbolPriceEl  = document.querySelector('.symbol-price');
     const symbolChangeEl = document.querySelector('.symbol-change');
-    const statsCards     = document.querySelectorAll('.stat-card');
+    const statsCards = document.querySelectorAll('.stat-card');
 
     DataManager.subscribe(() => {
         updateLegend(symbol, symbolNameEl, symbolPriceEl, symbolChangeEl, statsCards);
