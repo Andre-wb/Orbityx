@@ -87,10 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
     chart.timeScale().subscribeVisibleTimeRangeChange(range => {
         if (loading || !range?.from) return;
         if (range.from * 1000 >= earliest + 60_000) return;
-// Convert to milliseconds correctly
+
         const visibleStart = range.from * 1000;
 
-        // Check if we need earlier data
         if (visibleStart >= earliest) return;
         loading = true;
         const end   = earliest;
