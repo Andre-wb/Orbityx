@@ -1,5 +1,5 @@
-import api from '../services/api.js';
-import { parseISO } from '../utils/date.js';
+import api from '../services/api.ts';
+import { parseISO } from '../utils/date.ts';
 
 class DataManager {
     constructor() {
