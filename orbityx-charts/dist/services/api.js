@@ -1,24 +1,13 @@
 const BASE_URL = 'https://api.coingecko.com/api/v3';
-
-async function request<T>(path: string): Promise<T> {
+async function request(path) {
     const res = await fetch(`${BASE_URL}${path}`);
     if (!res.ok) {
         const text = await res.text();
         throw new Error(`CoinGecko API error ${res.status}: ${res.statusText} — ${text}`);
     }
-    return (await res.json()) as T;
+    return (await res.json());
 }
-
-export type RawCandle = {
-    timestamp: number | string | Date;
-    open: number | string;
-    high: number | string;
-    low: number | string;
-    close: number | string;
-    volume: number | string;
-};
-
-function intervalToDays(interval: string): number {
+function intervalToDays(interval) {
     switch (interval) {
         case '1d': return 1;
         case '3d': return 3;
@@ -34,10 +23,9 @@ function intervalToDays(interval: string): number {
         default: return 30;
     }
 }
-
-export async function fetchCandles(symbol: string, interval: string): Promise<RawCandle[]> {
+export async function fetchCandles(symbol, interval) {
     const days = intervalToDays(interval);
-    const rows = await request<number[][]>(`/coins/${encodeURIComponent(symbol)}/ohlc?vs_currency=usd&days=${days}`);
+    const rows = await request(`/coins/${encodeURIComponent(symbol)}/ohlc?vs_currency=usd&days=${days}`);
     return rows.map(([t, o, h, l, c]) => ({
         timestamp: t,
         open: o,
@@ -47,11 +35,9 @@ export async function fetchCandles(symbol: string, interval: string): Promise<Ra
         volume: 0,
     }));
 }
-
-export async function fetchMarketChart(symbol: string, days: number = 1): Promise<unknown> {
-    return await request<unknown>(`/coins/${encodeURIComponent(symbol)}/market_chart?vs_currency=usd&days=${days}`);
+export async function fetchMarketChart(symbol, days = 1) {
+    return await request(`/coins/${encodeURIComponent(symbol)}/market_chart?vs_currency=usd&days=${days}`);
 }
-
 export default {
     fetchCandles,
     fetchMarketChart,

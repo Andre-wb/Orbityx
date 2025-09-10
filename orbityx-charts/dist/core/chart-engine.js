@@ -1,69 +1,15 @@
-type Candle = {
-    timestamp: number;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-};
-
-type ThemeColors = {
-    upColor: string;
-    downColor: string;
-    wickColor: string;
-    bgColor: string;
-    gridColor: string;
-    textColor: string;
-    priceLineColor: string;
-};
-
-type Config = {
-    theme: 'dark' | 'light';
-    darkTheme: ThemeColors;
-    lightTheme: ThemeColors;
-    candleWidth: number;
-    candleSpacing: number;
-    margin: { top: number; right: number; bottom: number; left: number };
-};
-
-type State = {
-    data: Candle[];
-    visibleData: Candle[];
-    scaleX: number;
-    offsetX: number;
-    minPrice: number;
-    maxPrice: number;
-    width: number;
-    height: number;
-    currentPrice: number;
-    isDragging: boolean;
-    dragStartX: number;
-};
-
-type DataManagerLike = {
-    getData(): Candle[];
-};
-
 export default class ChartEngine {
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
-    public config: Config;
-    public state: State;
-    public dataManager!: DataManagerLike;
-
-    constructor(canvasId: string) {
+    constructor(canvasId) {
         const el = document.getElementById(canvasId);
         if (!(el instanceof HTMLCanvasElement)) {
             throw new Error(`Element with id "${canvasId}" is not a <canvas> or not found`);
         }
         this.canvas = el;
-
         const ctx = this.canvas.getContext('2d');
         if (!ctx) {
             throw new Error('2D rendering context is not available');
         }
         this.ctx = ctx;
-
         this.config = {
             theme: (localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'),
             darkTheme: {
@@ -88,7 +34,6 @@ export default class ChartEngine {
             candleSpacing: 3,
             margin: { top: 30, right: 20, bottom: 50, left: 60 },
         };
-
         this.state = {
             data: [],
             visibleData: [],
@@ -102,129 +47,107 @@ export default class ChartEngine {
             isDragging: false,
             dragStartX: 0,
         };
-
         this.handleResize = this.handleResize.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
     }
-
-    getColors(): ThemeColors {
+    getColors() {
         return this.config.theme === 'dark' ? this.config.darkTheme : this.config.lightTheme;
     }
-
-    init(dataManager: DataManagerLike): void {
+    init(dataManager) {
         this.dataManager = dataManager;
         this.setData(this.dataManager.getData());
         this.resizeCanvas();
         this.setupEventListeners();
         this.draw();
     }
-
-    update(): void {
+    update() {
         this.setData(this.dataManager.getData());
     }
-
-    resetView(): void {
+    resetView() {
         this.state.scaleX = 1;
         this.state.offsetX = 0;
         this.updateVisibleData();
         this.draw();
     }
-
-    applyTheme(theme: 'dark' | 'light'): void {
+    applyTheme(theme) {
         this.config.theme = theme;
         this.draw();
     }
-
-    resizeCanvas(): void {
+    resizeCanvas() {
         const container = this.canvas.parentElement;
-        if (!container) return;
+        if (!container)
+            return;
         this.canvas.width = container.clientWidth;
         this.canvas.height = container.clientHeight;
         this.state.width = this.canvas.width;
         this.state.height = this.canvas.height;
         this.updateVisibleData();
     }
-
-    handleResize(): void {
+    handleResize() {
         this.resizeCanvas();
         this.draw();
     }
-
-    setData(data: Candle[]): void {
+    setData(data) {
         this.state.data = data;
         this.state.currentPrice = data.length ? data[data.length - 1].close : 0;
         this.updateVisibleData();
         this.draw();
     }
-
-    updateVisibleData(): void {
+    updateVisibleData() {
         const { left, right } = this.config.margin;
         const visibleW = this.state.width - left - right;
         const space = this.config.candleWidth + this.config.candleSpacing;
         const count = Math.floor(visibleW / (space * this.state.scaleX));
         const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX));
         const end = Math.min(this.state.data.length, start + count);
-
         this.state.visibleData = this.state.data.slice(start, end);
-
         if (this.state.visibleData.length === 0) {
             this.state.minPrice = 0;
             this.state.maxPrice = 0;
             return;
         }
-
         let min = Infinity;
         let max = -Infinity;
         for (const c of this.state.visibleData) {
-            if (c.low < min) min = c.low;
-            if (c.high > max) max = c.high;
+            if (c.low < min)
+                min = c.low;
+            if (c.high > max)
+                max = c.high;
         }
         const pad = (max - min) * 0.05;
         this.state.minPrice = min - pad;
         this.state.maxPrice = max + pad;
     }
-
-    priceToY(price: number): number {
+    priceToY(price) {
         const h = this.state.height - this.config.margin.top - this.config.margin.bottom;
         return this.state.height - this.config.margin.bottom -
             ((price - this.state.minPrice) / (this.state.maxPrice - this.state.minPrice)) * h;
     }
-
-    indexToX(index: number): number {
+    indexToX(index) {
         const space = (this.config.candleWidth + this.config.candleSpacing) * this.state.scaleX;
         return this.config.margin.left + index * space;
     }
-
-    draw(): void {
+    draw() {
         this.ctx.clearRect(0, 0, this.state.width, this.state.height);
         this.drawBackground();
         this.drawGrid();
         this.drawCandles();
         this.drawCurrentPrice();
     }
-
-    drawBackground(): void {
+    drawBackground() {
         const theme = this.getColors();
         const m = this.config.margin;
         this.ctx.fillStyle = theme.bgColor;
-        this.ctx.fillRect(
-            m.left,
-            m.top,
-            this.state.width - m.left - m.right,
-            this.state.height - m.top - m.bottom
-        );
+        this.ctx.fillRect(m.left, m.top, this.state.width - m.left - m.right, this.state.height - m.top - m.bottom);
     }
-
-    drawGrid(): void {
+    drawGrid() {
         const theme = this.getColors();
         const { left, right, top, bottom } = this.config.margin;
-
         this.ctx.strokeStyle = theme.gridColor;
         this.ctx.lineWidth = 1;
-
         for (let i = 0; i <= 10; i++) {
             const x = left + (i / 10) * (this.state.width - left - right);
             this.ctx.beginPath();
@@ -232,36 +155,25 @@ export default class ChartEngine {
             this.ctx.lineTo(x, this.state.height - bottom);
             this.ctx.stroke();
         }
-
         this.ctx.fillStyle = theme.textColor;
         this.ctx.font = '12px Arial';
         this.ctx.textAlign = 'right';
         this.ctx.textBaseline = 'middle';
-
         for (let i = 0; i <= 8; i++) {
             const y = top + (i / 8) * (this.state.height - top - bottom);
             this.ctx.beginPath();
             this.ctx.moveTo(left, y);
             this.ctx.lineTo(this.state.width - right, y);
             this.ctx.stroke();
-
             const price = this.state.minPrice +
                 (this.state.maxPrice - this.state.minPrice) * (1 - i / 8);
-
-            this.ctx.fillText(
-                '$' + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-                left - 10,
-                y
-            );
+            this.ctx.fillText('$' + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), left - 10, y);
         }
     }
-
-    drawCandles(): void {
+    drawCandles() {
         const theme = this.getColors();
         const bodyW = this.config.candleWidth * this.state.scaleX;
-
         this.ctx.save();
-
         for (let i = 0; i < this.state.visibleData.length; i++) {
             const c = this.state.visibleData[i];
             const x = this.indexToX(i);
@@ -273,23 +185,19 @@ export default class ChartEngine {
             const isUp = c.close > c.open;
             const bodyTop = Math.min(openY, closeY);
             const bodyH = Math.abs(openY - closeY);
-
             this.ctx.strokeStyle = theme.wickColor;
             this.ctx.beginPath();
             this.ctx.moveTo(centerX, highY);
             this.ctx.lineTo(centerX, lowY);
             this.ctx.stroke();
-
             this.ctx.fillStyle = isUp ? theme.upColor : theme.downColor;
             this.ctx.fillRect(x, bodyTop, bodyW, bodyH);
             this.ctx.strokeStyle = isUp ? theme.upColor : theme.downColor;
             this.ctx.strokeRect(x, bodyTop, bodyW, bodyH);
         }
-
         this.ctx.restore();
     }
-
-    drawCurrentPrice(): void {
+    drawCurrentPrice() {
         const theme = this.getColors();
         const y = this.priceToY(this.state.currentPrice);
         this.ctx.strokeStyle = theme.priceLineColor;
@@ -301,26 +209,21 @@ export default class ChartEngine {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
     }
-
-    setupEventListeners(): void {
+    setupEventListeners() {
         window.addEventListener('resize', this.handleResize);
-
-        const zoomInBtn = document.getElementById('zoomIn') as HTMLButtonElement | null;
-        const zoomOutBtn = document.getElementById('zoomOut') as HTMLButtonElement | null;
-        const resetBtn = document.getElementById('resetView') as HTMLButtonElement | null;
-
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const resetBtn = document.getElementById('resetView');
         zoomInBtn?.addEventListener('click', () => this.zoomIn());
         zoomOutBtn?.addEventListener('click', () => this.zoomOut());
         resetBtn?.addEventListener('click', () => this.resetView());
-
         this.canvas.addEventListener('wheel', this.handleWheel, { passive: false });
         this.canvas.addEventListener('mousedown', this.handleMouseDown);
         this.canvas.addEventListener('mousemove', this.handleMouseMove);
         this.canvas.addEventListener('mouseup', this.handleMouseUp);
         this.canvas.addEventListener('mouseleave', this.handleMouseUp);
     }
-
-    handleWheel(e: WheelEvent): void {
+    handleWheel(e) {
         e.preventDefault();
         const zoomIntensity = 0.1;
         const zoomFactor = 1 + (e.deltaY > 0 ? -zoomIntensity : zoomIntensity);
@@ -328,36 +231,33 @@ export default class ChartEngine {
         this.updateVisibleData();
         this.draw();
     }
-
-    zoomIn(): void {
+    zoomIn() {
         this.state.scaleX = Math.min(5, this.state.scaleX * 1.2);
         this.updateVisibleData();
         this.draw();
     }
-
-    zoomOut(): void {
+    zoomOut() {
         this.state.scaleX = Math.max(0.5, this.state.scaleX / 1.2);
         this.updateVisibleData();
         this.draw();
     }
-
-    handleMouseDown(e: MouseEvent): void {
+    handleMouseDown(e) {
         this.state.isDragging = true;
         this.state.dragStartX = e.clientX;
         this.canvas.style.cursor = 'grabbing';
     }
-
-    handleMouseMove(e: MouseEvent): void {
-        if (!this.state.isDragging) return;
+    handleMouseMove(e) {
+        if (!this.state.isDragging)
+            return;
         const deltaX = e.clientX - this.state.dragStartX;
         this.state.dragStartX = e.clientX;
         this.state.offsetX += deltaX / (this.config.candleWidth + this.config.candleSpacing) / this.state.scaleX;
         this.updateVisibleData();
         this.draw();
     }
-
-    handleMouseUp(): void {
-        if (!this.state.isDragging) return;
+    handleMouseUp() {
+        if (!this.state.isDragging)
+            return;
         this.state.isDragging = false;
         this.canvas.style.cursor = 'default';
     }
