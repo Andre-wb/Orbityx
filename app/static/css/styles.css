@@ -1,3 +1,10 @@
+/*
+ * Orbityx UI stylesheet
+ *
+ * Notes:
+ * - CSS variables under :root define the LIGHT theme; `.dark` overrides them.
+ * - Only comments were added in this patch; no style behavior was changed.
+ */
 * {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
@@ -9,6 +16,7 @@
 html {
     overflow-x: hidden;
 }
+/* Light theme tokens (defaults) */
 :root {
     --bg-color: #fff;
     --text-color: #0c0c0c;
@@ -17,6 +25,7 @@ html {
     --button-bg: #000000;
     --border-color: #b5b5b5;
     --press-bg: #4f824f;
+    /* Active/hover state background for buttons/links (click feedback) */
     --click-bg: #262626;
     --formr-bg: #e6eae7;
     --lower-price: #e40000;
@@ -25,6 +34,7 @@ html {
     --chart-text: #000000;
 }
 
+/* Dark theme tokens (override the variables from :root) */
 .dark {
     --bg-color: #0f1019;
     --text-color: #f0f5fd;
@@ -33,6 +43,7 @@ html {
     --button-bg: #404545;
     --border-color: #373A4EFF;
     --press-bg: #22a03f;
+    /* Active/hover state background for buttons/links in dark mode */
     --click-bg: #6fdc6f;
     --formr-bg: #000000;
     --lower-price: #e63d19;
@@ -72,6 +83,7 @@ header {
     transition: 0.4s ease-in-out;
     gap: 10px
 }
+/* Top navigation layout */
 #navigation {
     display: flex;
     align-items: center;
@@ -163,6 +175,7 @@ main {
     text-align: center;
     position: relative;
 }
+/* Responsive table layout: sticky first columns on smaller screens */
 @media (min-width: 1024px) {
     .table_container {
         width: 80vw;
@@ -258,6 +271,7 @@ a.link-register:visited {
     color: var(--text-color);
 }
 
+/* Auth/profile form card */
 .form-container {
     width: 100%;
     max-width: 500px;
@@ -415,6 +429,7 @@ table {
     font-style: italic;
     transition-delay: 0.3s;
 }
+/* 3D intro advantages section (parallax-like transforms) */
 .image-wrapper {
     perspective: 800px;
     display: flex;
@@ -599,6 +614,7 @@ table {
 .right-arrow, .left-arrow, .bottom-arrow .hidden {
     opacity: 1;
 }
+/* Mobile navigation drawer */
 @media (min-width: 720px) {
     .menu-button, .line{
         display: none !important;
@@ -606,6 +622,7 @@ table {
         width: 0;
     }
 }
+/* Mobile navigation drawer */
 @media (max-width: 720px) {
     #navigation {
         display: flex;
@@ -639,6 +656,7 @@ table {
         width: 100%;
     }
 }
+/* Hamburger button for mobile nav */
 .menu-button {
     display: grid;
     place-items: center;

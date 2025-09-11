@@ -1,4 +1,26 @@
+/**
+ * ChartEngine – a lightweight, canvas-based OHLC chart renderer.
+ *
+ * Responsibilities:
+ *  - Manage canvas sizing and high-level layout (margins, grids, axes labels).
+ *  - Maintain view state (zoom/scroll) and translate between price/index and pixels.
+ *  - Render candles, wicks, grid, and current price line.
+ *  - Handle basic user interactions: wheel-zoom, drag-to-pan, and simple controls.
+ *
+ * Non-Goals:
+ *  - Data fetching, order books, overlays/indicators – provide via higher layers.
+ *
+ * Usage:
+ *  1) const engine = new ChartEngine('canvasId');
+ *  2) engine.init(dataManager); // dataManager implements DataManagerLike
+ *  3) engine.update(); // call when new data arrives
+ */
 export default class ChartEngine {
+    /**
+     * Create a ChartEngine bound to a specific <canvas> element by id.
+     * Throws if the element is missing or 2D context is unavailable.
+     * @param canvasId - DOM id of the target <canvas> element.
+     */
     constructor(canvasId) {
         const el = document.getElementById(canvasId);
         if (!(el instanceof HTMLCanvasElement)) {
@@ -53,9 +75,16 @@ export default class ChartEngine {
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
     }
+    /**
+     * Resolve the active color palette based on the current theme.
+     */
     getColors() {
         return this.config.theme === 'dark' ? this.config.darkTheme : this.config.lightTheme;
     }
+    /**
+     * One-time initializer: attach a data manager, size the canvas,
+     * subscribe to events, and paint the first frame.
+     */
     init(dataManager) {
         this.dataManager = dataManager;
         this.setData(this.dataManager.getData());
@@ -63,19 +92,33 @@ export default class ChartEngine {
         this.setupEventListeners();
         this.draw();
     }
+    /**
+     * Pull fresh data from the data manager and re-render.
+     * Call this when new candles arrive.
+     */
     update() {
         this.setData(this.dataManager.getData());
     }
+    /**
+     * Reset zoom and scroll offsets to defaults and re-render.
+     */
     resetView() {
         this.state.scaleX = 1;
         this.state.offsetX = 0;
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * Switch active theme and repaint.
+     */
     applyTheme(theme) {
         this.config.theme = theme;
         this.draw();
     }
+    /**
+     * Match canvas size to its container and update derived state.
+     * Note: relies on parent element sizing; ensure the container has layout.
+     */
     resizeCanvas() {
         const container = this.canvas.parentElement;
         if (!container)
@@ -86,18 +129,31 @@ export default class ChartEngine {
         this.state.height = this.canvas.height;
         this.updateVisibleData();
     }
+    /**
+     * Window resize handler – resizes canvas and repaints.
+     */
     handleResize() {
         this.resizeCanvas();
         this.draw();
     }
+    /**
+     * Replace the full dataset and recompute min/max and current price.
+     * @param data - Candles sorted by time ascending.
+     */
     setData(data) {
         this.state.data = data;
         this.state.currentPrice = data.length ? data[data.length - 1].close : 0;
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * Compute the slice of data that fits into the current viewport given
+     * the zoom level (`scaleX`) and horizontal offset (`offsetX`). Also updates
+     * dynamic price bounds with a small padding for aesthetics.
+     */
     updateVisibleData() {
         const { left, right } = this.config.margin;
+        // Compute how many candles can be shown given inner width and current zoom.
         const visibleW = this.state.width - left - right;
         const space = this.config.candleWidth + this.config.candleSpacing;
         const count = Math.floor(visibleW / (space * this.state.scaleX));
@@ -109,6 +165,7 @@ export default class ChartEngine {
             this.state.maxPrice = 0;
             return;
         }
+        // Scan visible candles to determine dynamic price range for Y-scaling.
         let min = Infinity;
         let max = -Infinity;
         for (const c of this.state.visibleData) {
@@ -121,15 +178,26 @@ export default class ChartEngine {
         this.state.minPrice = min - pad;
         this.state.maxPrice = max + pad;
     }
+    /**
+     * Convert a price value into a canvas Y coordinate inside the plot area.
+     * Top-left is (0,0); higher prices map towards the top of the plot.
+     */
     priceToY(price) {
         const h = this.state.height - this.config.margin.top - this.config.margin.bottom;
+        // Invert Y because canvas increases downward.
         return this.state.height - this.config.margin.bottom -
             ((price - this.state.minPrice) / (this.state.maxPrice - this.state.minPrice)) * h;
     }
+    /**
+     * Convert a visible-data index into a canvas X coordinate (left edge of body).
+     */
     indexToX(index) {
         const space = (this.config.candleWidth + this.config.candleSpacing) * this.state.scaleX;
         return this.config.margin.left + index * space;
     }
+    /**
+     * Main render routine – clears the frame and draws layers in order.
+     */
     draw() {
         this.ctx.clearRect(0, 0, this.state.width, this.state.height);
         this.drawBackground();
@@ -137,17 +205,24 @@ export default class ChartEngine {
         this.drawCandles();
         this.drawCurrentPrice();
     }
+    /**
+     * Paint the chart plotting area background inside the margins.
+     */
     drawBackground() {
         const theme = this.getColors();
         const m = this.config.margin;
         this.ctx.fillStyle = theme.bgColor;
         this.ctx.fillRect(m.left, m.top, this.state.width - m.left - m.right, this.state.height - m.top - m.bottom);
     }
+    /**
+     * Draw vertical and horizontal grid lines and annotate the price scale.
+     */
     drawGrid() {
         const theme = this.getColors();
         const { left, right, top, bottom } = this.config.margin;
         this.ctx.strokeStyle = theme.gridColor;
         this.ctx.lineWidth = 1;
+        // Vertical grid lines (X-axis subdivisions).
         for (let i = 0; i <= 10; i++) {
             const x = left + (i / 10) * (this.state.width - left - right);
             this.ctx.beginPath();
@@ -159,6 +234,7 @@ export default class ChartEngine {
         this.ctx.font = '12px Arial';
         this.ctx.textAlign = 'right';
         this.ctx.textBaseline = 'middle';
+        // Horizontal grid lines (Y-axis) with price labels.
         for (let i = 0; i <= 8; i++) {
             const y = top + (i / 8) * (this.state.height - top - bottom);
             this.ctx.beginPath();
@@ -170,10 +246,14 @@ export default class ChartEngine {
             this.ctx.fillText('$' + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), left - 10, y);
         }
     }
+    /**
+     * Render candle bodies and wicks for the visible data window.
+     */
     drawCandles() {
         const theme = this.getColors();
         const bodyW = this.config.candleWidth * this.state.scaleX;
         this.ctx.save();
+        // Iterate visible candles; index i maps to X via indexToX(i).
         for (let i = 0; i < this.state.visibleData.length; i++) {
             const c = this.state.visibleData[i];
             const x = this.indexToX(i);
@@ -185,11 +265,13 @@ export default class ChartEngine {
             const isUp = c.close > c.open;
             const bodyTop = Math.min(openY, closeY);
             const bodyH = Math.abs(openY - closeY);
+            // Wick (high→low) centered on the candle's X mid-point.
             this.ctx.strokeStyle = theme.wickColor;
             this.ctx.beginPath();
             this.ctx.moveTo(centerX, highY);
             this.ctx.lineTo(centerX, lowY);
             this.ctx.stroke();
+            // Candle body – filled and then outlined for crisp edges.
             this.ctx.fillStyle = isUp ? theme.upColor : theme.downColor;
             this.ctx.fillRect(x, bodyTop, bodyW, bodyH);
             this.ctx.strokeStyle = isUp ? theme.upColor : theme.downColor;
@@ -197,6 +279,9 @@ export default class ChartEngine {
         }
         this.ctx.restore();
     }
+    /**
+     * Draw a dashed horizontal line at the latest close price.
+     */
     drawCurrentPrice() {
         const theme = this.getColors();
         const y = this.priceToY(this.state.currentPrice);
@@ -209,6 +294,9 @@ export default class ChartEngine {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
     }
+    /**
+     * Wire up window resize, toolbar buttons, and pointer interactions.
+     */
     setupEventListeners() {
         window.addEventListener('resize', this.handleResize);
         const zoomInBtn = document.getElementById('zoomIn');
@@ -223,6 +311,10 @@ export default class ChartEngine {
         this.canvas.addEventListener('mouseup', this.handleMouseUp);
         this.canvas.addEventListener('mouseleave', this.handleMouseUp);
     }
+    /**
+     * Mouse wheel zoom handler – scales `scaleX` around a fixed center.
+     * Prevents default scrolling to keep interaction within the canvas.
+     */
     handleWheel(e) {
         e.preventDefault();
         const zoomIntensity = 0.1;
@@ -231,30 +323,46 @@ export default class ChartEngine {
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * Programmatic zoom-in (e.g., toolbar button).
+     */
     zoomIn() {
         this.state.scaleX = Math.min(5, this.state.scaleX * 1.2);
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * Programmatic zoom-out (e.g., toolbar button).
+     */
     zoomOut() {
         this.state.scaleX = Math.max(0.5, this.state.scaleX / 1.2);
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * Begin drag-to-pan interaction; remembers the starting X.
+     */
     handleMouseDown(e) {
         this.state.isDragging = true;
         this.state.dragStartX = e.clientX;
         this.canvas.style.cursor = 'grabbing';
     }
+    /**
+     * If dragging, convert pixel delta into candle-offset units and pan.
+     */
     handleMouseMove(e) {
         if (!this.state.isDragging)
             return;
         const deltaX = e.clientX - this.state.dragStartX;
         this.state.dragStartX = e.clientX;
+        // Translate pixel movement to data-space offset (candles), respecting zoom.
         this.state.offsetX += deltaX / (this.config.candleWidth + this.config.candleSpacing) / this.state.scaleX;
         this.updateVisibleData();
         this.draw();
     }
+    /**
+     * End drag interaction and restore cursor.
+     */
     handleMouseUp() {
         if (!this.state.isDragging)
             return;

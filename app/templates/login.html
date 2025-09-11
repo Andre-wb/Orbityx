@@ -1,32 +1,51 @@
+<!--
+  Login page template
+  Notes:
+  - Extends base.html and renders a simple login form using WTForms.
+  - Shows per-field errors and flashed messages from Flask.
+  - Comments only; no markup/logic changes.
+-->
 {% extends 'base.html' %}
+<!-- Page <title> block -->
 {% block title %}Вход | Orbityx{% endblock %}
+<!-- Main content: login form card -->
 {% block content %}
 
+    <!-- Card container styled via .form-container -->
 <div class="form-container">
     <h2>Вход</h2>
+    <!-- WTForms-based login; POST to current route -->
     <form method="POST">
+            <!-- CSRF and hidden fields -->
         {{ form.hidden_tag() }}
 
+            <!-- Credential field (email/username depending on form config) -->
         <div class="form-group">
             <label>{{ form.credential.label }}</label>
             {{ form.credential(class_="form-control") }}
+                <!-- Inline validation errors for credential -->
             {% for error in form.credential.errors %}
             <span class="error">{{ error }}</span>
             {% endfor %}
         </div>
 
+            <!-- Password field -->
         <div class="form-group">
             <label>{{ form.password.label }}</label>
             {{ form.password(class_="form-control") }}
+                <!-- Inline validation errors for password -->
             {% for error in form.password.errors %}
             <span class="error">{{ error }}</span>
             {% endfor %}
         </div>
 
+            <!-- Submit button -->
         <button type="submit">Войти</button>
     </form>
 
+    <!-- Global flashed messages (e.g., invalid credentials) -->
     {% with messages = get_flashed_messages() %}
+        <!-- Render each flash as a list item -->
     {% if messages %}
     <ul class="error" style="margin-top: 15px; padding-left: 20px;">
         {% for message in messages %}
@@ -36,6 +55,7 @@
     {% endif %}
     {% endwith %}
 
+    <!-- Registration link for new users -->
     <p class="log-subtext"> Ещё нет аккаунта? <a href="{{ url_for('main.register_user') }}" class="login-link"> Зарегистрироваться </a></p>
 </div>
 

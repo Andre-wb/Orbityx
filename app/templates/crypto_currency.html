@@ -1,12 +1,26 @@
+<!--
+  Crypto currencies listing page
+  Notes:
+  - Extends base layout and renders a table of coins provided by the view.
+  - Uses Jinja2 loops/conditions to format changes and market cap.
+  - Comments only; no markup/logic changes.
+-->
 {% extends 'base.html' %}
+<!-- Page <title> text -->
 {% block title %}Актуальный рейтинг криптовалют на Orbityx{% endblock %}
+<!-- Main content: heading and a responsive table of coins -->
 {% block content %}
 
+    <!-- Top heading; could be localized via i18n later -->
 <h1 class="">Все криптовалюты</h1>
+    <!-- Scrollable container to allow horizontal overflow on small screens -->
 <div class="table_container">
+    <!-- Currency table: name, price, % changes, and market cap -->
 <table class="currency_table">
+        <!-- Table header: column labels -->
     <thead class="currency_thead">
     <tr id="currency_thead">
+            <!-- Row index, coin name/symbol, current price, % changes, market cap -->
         <th class="number_t">#</th>
         <th class="name_t">Название</th>
         <th>Цена</th>
@@ -16,17 +30,26 @@
         <th>Рын. кап.</th>
     </tr>
     </thead>
+        <!-- Table body: iterate over coins provided by the backend -->
     <tbody>
+        {# Jinja loop over the list of coin dicts/objects #}
     {% for coin in coins %}
+        <!-- One row per coin -->
     <tr class="currency_row">
+            <!-- Sequential index starting at 1 (loop.index) -->
         <td class="number_th">{{ loop.index }}</td>
+            <!-- Name cell: link to per-coin chart page with icon and symbol -->
         <td class="name_th">
+                <!-- Uses coin.id to build the URL to the chart view -->
             <a href="{{ url_for('main.btc_chart', coin_id=coin.id) }}" class="coin_name">
+                <!-- Coin icon from API payload (20px); alt shows full name -->
                 <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
                 {{ coin.name }} ({{ coin.symbol|upper }})
             </a>
         </td>
+            <!-- Current price in USD (consider a formatter for locale/precision) -->
         <td class="price_th">${{ coin.current_price }}</td>
+            <!-- 1h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
             {% if coin.price_change_percentage_1h_in_currency >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
@@ -34,6 +57,7 @@
             <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
             {% endif %}
         </td>
+            <!-- 24h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
             {% if coin.price_change_percentage_24h >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
@@ -41,6 +65,7 @@
             <span class="price_lower_th">{{ coin.price_change_percentage_24h | round(2) }}%</span>
             {% endif %}
         </td>
+            <!-- 7d change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
             {% if coin.price_change_percentage_7d_in_currency >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
@@ -48,6 +73,7 @@
             <span class="price_lower_th">{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
             {% endif %}
         </td>
+            <!-- Market cap formatted with thousands separators -->
         <td class="marker_cap_th">${{ "{:,}".format(coin.market_cap | int) }}</td>
     </tr>
     {% endfor %}

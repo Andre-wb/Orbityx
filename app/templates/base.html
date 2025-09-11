@@ -1,24 +1,42 @@
 <!doctype html>
+<!--
+  Base layout template for Orbityx (Flask + Jinja2)
+  Notes:
+  - Provides global header, nav, theme toggle, and script/style includes.
+  - Child templates fill `{% block title %}` and `{% block content %}`.
+  - This patch adds comments only; no markup/logic changes.
+-->
+<!-- HTML root with language set to English; `.dark` is toggled on <html> by ThemeToggle.js -->
 <html lang="en">
+<!-- Document metadata and global stylesheet link -->
 <head>
     <meta charset="UTF-8">
+        <!-- Mobile-first viewport; disables user scaling per current design -->
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- Page title provided by child templates via Jinja block -->
     <title>{% block title %}{% endblock %}</title>
 
+        <!-- Main CSS bundle; contains light/dark theme tokens and layout rules -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
+<!-- Page body: header (logo/nav/theme/menu) + main content slot -->
 <body>
+    <!-- Site header: logo, primary navigation, auth links, theme switch, burger -->
 <header>
+        <!-- Brand logo; src is assigned by ThemeToggle to match theme -->
     <div class="logo">
         <img id="logo" src="" alt="Logo" width="60" height="60">
     </div>
+        <!-- Primary navigation container (toggled on mobile by .menu-button) -->
     <div id="navigation">
+            <!-- Public site links -->
         <div class="binance-links">
             <a href="/">О нас</a>
             <a href="/currency">Криптовалюты</a>
         </div>
+            <!-- Auth area: shows Profile when logged in; Login/Register otherwise -->
         <div class="binance-login">
             {% if current_user.is_authenticated %}
             <a href="/profile">Профиль</a>
@@ -28,10 +46,12 @@
             {% endif %}
         </div>
     </div>
+    <!-- Theme toggle: controlled by ThemeToggle.js; persists theme in localStorage -->
     <label class="theme-switch" id="theme-switch">
         <input type="checkbox" id="theme-toggle">
         <span class="slider"></span>
     </label>
+    <!-- Mobile hamburger; toggles #navigation and #theme-switch visibility -->
     <button class="menu-button">
         <span class="top-line line"></span>
         <span class="center-line line"></span>
@@ -39,14 +59,17 @@
     </button>
 </header>
 <br>
+<!-- Main content area; child templates render into `{% block content %}` -->
 <main>
     {% block content %}{% endblock %}
 </main>
 
+<!-- Scripts: Theme toggle, reveal-on-scroll, scroll-tilt, and parallax effects -->
 <script src="{{ url_for('static', filename='js/ThemeToggle.js') }}"></script>
 <script src="{{ url_for('static', filename='js/items_animation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/rotate_animations.js') }}"></script>
 <script src="{{ url_for('static', filename='js/parallax_animations.js') }}"></script>
+<!-- Optional per-page scripts injected by child templates -->
 {% block scripts %}{% endblock %}
 </body>
 </html>
