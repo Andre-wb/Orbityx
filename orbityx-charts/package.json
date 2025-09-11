@@ -2,14 +2,16 @@
   "name": "orbityx-charts",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Orbityx Charts library",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
+    "copy": "mkdir -p ../app/static/js/orbityx && rsync -a dist/ ../app/static/js/orbityx/",
+    "build:app": "npm run build && npm run copy",
+    "watch:app": "npm run watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Andre-wb/Orbityx.git"
-  },
-  "private": true
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
 }

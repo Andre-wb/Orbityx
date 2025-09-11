@@ -162,3 +162,4 @@ export function floorToInterval(ts, interval) {
             return ts;
     }
 }
+//# sourceMappingURL=date.js.map

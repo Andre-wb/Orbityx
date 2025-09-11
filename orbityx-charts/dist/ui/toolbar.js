@@ -188,3 +188,4 @@ export function getTimeframeLabel(timeframe) {
     // Fallback: echo the key if not found to aid debugging of new presets.
     return labels[timeframe] || timeframe;
 }
+//# sourceMappingURL=toolbar.js.map

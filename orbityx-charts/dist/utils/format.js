@@ -147,3 +147,4 @@ const format = {
     parseNumber,
 };
 export default format;
+//# sourceMappingURL=format.js.map
