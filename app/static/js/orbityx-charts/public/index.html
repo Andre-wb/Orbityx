@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Chart Pro - Advanced Financial Charting</title>
+  <meta name="description" content="Professional trading charts with real-time data and technical analysis">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="alternate icon" href="assets/favicon.ico">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chart.css">
+  <link rel="stylesheet" href="assets/css/theme.css">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="assets/fonts/Inter.var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/RobotoMono.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+<body>
+<!-- Loading indicator -->
+<div id="loading-indicator" class="loading-indicator">
+  <div class="spinner"></div>
+  <span class="loading-text">Loading market data...</span>
+</div>
+
+<!-- Error notification (initially hidden) -->
+<div id="error-notification" class="error-notification" style="display: none;">
+  <div class="error-title"></div>
+  <div class="error-message"></div>
+  <button class="error-dismiss">×</button>
+</div>
+
+<!-- Application container -->
+<div class="app-container">
+  <!-- Header with app title and basic controls -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 2C8.268 2 2 8.268 2 16C2 23.732 8.268 30 16 30C23.732 30 30 23.732 30 16C30 8.268 23.732 2 16 2Z"
+                stroke="currentColor" stroke-width="2"/>
+          <path d="M16 6L16 26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 12L10 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 20L10 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M6 16L26 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1>Quantum Chart Pro</h1>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="symbol-selector">
+        <select id="symbol-select">
+          <option value="bitcoin">BTC/USD</option>
+          <option value="ethereum">ETH/USD</option>
+          <option value="solana">SOL/USD</option>
+          <option value="ripple">XRP/USD</option>
+          <option value="cardano">ADA/USD</option>
+          <option value="dogecoin">DOGE/USD</option>
+          <option value="polkadot">DOT/USD</option>
+          <option value="litecoin">LTC/USD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button id="theme-toggle" class="header-btn" title="Toggle theme">
+        <span class="theme-icon">🌙</span>
+      </button>
+      <button id="fullscreen-btn" class="header-btn" title="Fullscreen">
+        <span class="fullscreen-icon">⛶</span>
+      </button>
+      <button id="settings-btn" class="header-btn" title="Settings">
+        <span class="settings-icon">⚙️</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content area -->
+  <main class="main-content">
+    <!-- Chart section -->
+    <section class="chart-section">
+      <!-- Toolbar container -->
+      <div id="toolbar" class="chart-toolbar"></div>
+
+      <!-- Chart canvas container -->
+      <div class="chart-container">
+        <canvas id="chartCanvas"></canvas>
+
+        <!-- Chart controls overlay -->
+        <div class="chart-controls">
+          <button id="zoom-in" class="control-btn" title="Zoom In">+</button>
+          <button id="zoom-out" class="control-btn" title="Zoom Out">-</button>
+          <button id="reset-view" class="control-btn" title="Reset View">↺</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Legend panel -->
+    <aside class="legend-panel">
+      <div class="panel-header">
+        <h2>Market Data</h2>
+      </div>
+      <div class="panel-content">
+        <!-- Symbol info -->
+        <div class="symbol-info">
+          <div class="symbol-icon">B</div>
+          <div class="symbol-details">
+            <div class="symbol-name">Bitcoin (BTC/USD)</div>
+            <div class="symbol-price">$--.--</div>
+            <div class="price-change">--.--%</div>
+          </div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">24H High</div>
+            <div class="stat-value">$--.--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">24H Low</div>
+            <div class="stat-value">$--.--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">24H Volume</div>
+            <div class="stat-value">--.--B</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Market Cap</div>
+            <div class="stat-value">--.--T</div>
+          </div>
+        </div>
+
+        <!-- Technical indicators -->
+        <div class="indicators-section">
+          <div class="section-title">
+            <span>Technical Indicators</span>
+          </div>
+          <div class="indicators-list">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Timeframe selector -->
+        <div class="timeframe-section">
+          <div class="section-title">
+            <span>Timeframe</span>
+          </div>
+          <div class="timeframe-controls">
+            <button class="timeframe-btn" data-timeframe="1m">1m</button>
+            <button class="timeframe-btn" data-timeframe="5m">5m</button>
+            <button class="timeframe-btn" data-timeframe="15m">15m</button>
+            <button class="timeframe-btn" data-timeframe="1h">1h</button>
+            <button class="timeframe-btn" data-timeframe="4h">4h</button>
+            <button class="timeframe-btn active" data-timeframe="1d">1d</button>
+            <button class="timeframe-btn" data-timeframe="1w">1w</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Status bar -->
+  <footer class="status-bar">
+    <div class="status-left">
+                <span id="connection-status" class="status-item">
+                    <span class="status-dot connected"></span>
+                    Connected
+                </span>
+      <span id="data-latency" class="status-item">Latency: --ms</span>
+    </div>
+    <div class="status-center">
+      <span id="last-update" class="status-item">Last update: --:--:--</span>
+    </div>
+    <div class="status-right">
+      <span id="frame-rate" class="status-item">-- FPS</span>
+    </div>
+  </footer>
+</div>
+
+<!-- Settings modal (initially hidden) -->
+<div id="settings-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Chart Settings</h2>
+      <button class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Settings content will be populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script type="module" src="src/main.ts"></script>
+</body>
+</html>

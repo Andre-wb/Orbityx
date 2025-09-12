@@ -15,6 +15,7 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 from dotenv import load_dotenv
+from .ws import init_ws
 
 # Extension singletons (initialized later inside create_app)
 
@@ -55,6 +56,6 @@ def create_app():
     from .routes import main as main_blueprint
     # Attach blueprint at the application root (no url_prefix)
     app.register_blueprint(main_blueprint)
-
+    init_ws(app)
     # Return the fully configured Flask application instance
     return app

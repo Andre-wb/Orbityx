@@ -1,18 +1,18 @@
 /**
- * Toolbar module – builds the top control strip (timeframes, chart type,
- * tools, fullscreen, settings) and wires interactions to the chart engine
- * and data manager. Display-only: does not change business logic or data shape.
+ * Toolbar module – pure UI layer that builds the top control strip (timeframes, chart type,
+ * tools, fullscreen, settings). It delegates all actions via callbacks and never fetches data directly.
+ * IDs must match DOM elements; zoom/reset controls are wired here directly as well.
  */
 /**
  * Initialize toolbar UI inside #toolbar and attach handlers.
- * @param chartEngine - Rendering engine exposing setData/resetView/zoom/setChartType APIs
- * @param dataManager - Data provider exposing loadCandles/getData APIs
- * @param themeHandler - Callback to switch theme ('dark' | 'light')
+ * @param onTimeframeChange - Callback(appTimeframeKey) -> void (delegates to app)
+ * @param onChartTypeChange - Callback(chartType) -> void (delegates to app)
+ * @param chartEngine       - Rendering engine exposing zoom/reset/setChartType APIs
  */
 export function initToolBar(
-  chartEngine: any,
-  dataManager: any,
-  themeHandler: (theme: 'dark' | 'light') => void
+  onTimeframeChange: (timeframe: string) => void,
+  onChartTypeChange: (chartType: string) => void,
+  chartEngine: any
 ): void {
   // Resolve toolbar container once; abort gracefully if missing.
   const toolbar = document.getElementById('toolbar') as HTMLDivElement | null;
@@ -21,7 +21,8 @@ export function initToolBar(
     return;
   }
   createToolbarStructure(toolbar);
-  setupEventListeners(toolbar, chartEngine, dataManager, themeHandler);
+  // Pass callbacks and engine to event wiring function.
+  setupEventListeners(toolbar, onTimeframeChange, onChartTypeChange, chartEngine);
 }
 
 /**
@@ -94,13 +95,14 @@ function createToolbarStructure(container: HTMLElement): void {
 }
 
 /**
- * Wire up toolbar controls to engine/data callbacks. No logic changes.
+ * Wire up toolbar controls to engine/callbacks. The toolbar does NOT fetch data.
+ * It delegates timeframe and chart-type changes upward to the app via callbacks.
  */
 function setupEventListeners(
   toolbar: HTMLElement,
-  chartEngine: any,
-  dataManager: any,
-  themeHandler: (theme: 'dark' | 'light') => void
+  onTimeframeChange: (timeframe: string) => void,
+  onChartTypeChange: (chartType: string) => void,
+  chartEngine: any
 ): void {
   // --- Timeframe switcher ---------------------------------------------------
   const timeframeBtns = toolbar.querySelectorAll<HTMLButtonElement>('[data-timeframe]');
@@ -109,15 +111,14 @@ function setupEventListeners(
       // Visual state: ensure only one timeframe button is active.
       timeframeBtns.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
-      // Read selected timeframe from data attribute; default to 1m.
+      // Read selected timeframe from data attribute; default to '1m'.
       const timeframe = btn.dataset.timeframe || '1m';
-      // Load candles for the chosen timeframe and refresh the chart.
-      Promise.resolve(dataManager.loadCandles('BTC/USD', timeframe))
-        .then(() => {
-          chartEngine.setData(dataManager.getData());
-          chartEngine.resetView();
-        })
-        .catch((error: unknown) => console.error('Failed to get any data.', error));
+      // Delegate upwards; app will reload data and perform re-render.
+      try {
+        onTimeframeChange(timeframe);
+      } catch (err) {
+        console.error('Timeframe change callback failed:', err);
+      }
     });
   });
 
@@ -130,26 +131,24 @@ function setupEventListeners(
       btn.classList.add('active');
       // Extract desired chart type (candlestick/line/area).
       const t = btn.dataset.chartType || 'candlestick';
-      chartEngine.setChartType(t); // Notify engine to switch renderer mode.
+      // Prefer delegating to app so it can synchronize state; fall back to engine.
+      try {
+        onChartTypeChange(t);
+      } catch (err) {
+        console.warn('onChartTypeChange failed, falling back to engine:', err);
+        chartEngine?.setChartType?.(t);
+      }
     });
   });
 
   // --- View controls (zoom/reset) ------------------------------------------
-  const zoomIn = toolbar.querySelector<HTMLButtonElement>('#zoom-in');
-  const zoomOut = toolbar.querySelector<HTMLButtonElement>('#zoom-out');
-  const resetView = toolbar.querySelector<HTMLButtonElement>('#reset-view');
-  zoomIn?.addEventListener('click', () => chartEngine.zoomIn());
-  zoomOut?.addEventListener('click', () => chartEngine.zoomOut());
-  resetView?.addEventListener('click', () => chartEngine.resetView());
-
-  // --- Theme toggle ---------------------------------------------------------
-  const themeBtn = toolbar.querySelector<HTMLInputElement>('#theme-toggle');
-  themeBtn?.addEventListener('click', () => {
-    // Infer current theme from body class; call handler with the next theme.
-    const isDark = document.body.classList.contains('dark');
-    const newTheme: 'dark' | 'light' = isDark ? 'dark' : 'light';
-    themeHandler(newTheme);
-  });
+  // Bind zoom/reset buttons by ID with defensive engine calls.
+  const zoomIn = toolbar.querySelector<HTMLButtonElement>('#zoom-in') || toolbar.querySelector<HTMLButtonElement>('#zoomIn');
+  const zoomOut = toolbar.querySelector<HTMLButtonElement>('#zoom-out') || toolbar.querySelector<HTMLButtonElement>('#zoomOut');
+  const resetView = toolbar.querySelector<HTMLButtonElement>('#reset-view') || toolbar.querySelector<HTMLButtonElement>('#resetView');
+  zoomIn?.addEventListener('click', () => chartEngine?.zoomIn?.());
+  zoomOut?.addEventListener('click', () => chartEngine?.zoomOut?.());
+  resetView?.addEventListener('click', () => chartEngine?.resetView?.());
 
   // --- Drawing tools --------------------------------------------------------
   const drawTrendline = toolbar.querySelector<HTMLButtonElement>('#draw-trendline');

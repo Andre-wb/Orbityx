@@ -1,6 +1,6 @@
 // TODO: Set the actual WebSocket endpoint here. Prefer secure wss:// in production.
 // Example: const WEBSOCKET_URL = process.env.WS_URL ?? 'wss://example.com/stream';
-const WEBSOCKET_URL = 'http://127.0.0.1:5000';
+const WEBSOCKET_URL = 'ws://127.0.0.1:5000/stream';
 /**
  * WebsocketService – resilient client for JSON-based WS streams.
  *
