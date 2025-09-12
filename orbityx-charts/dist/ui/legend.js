@@ -116,4 +116,3 @@ function update24hStats(data, statCards) {
     if (vCap)
         vCap.textContent = 'N/A';
 }
-//# sourceMappingURL=legend.js.map

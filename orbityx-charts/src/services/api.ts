@@ -1,8 +1,5 @@
 // Base endpoint for CoinGecko v3 REST API.
 const BASE_URL = 'https://api.coingecko.com/api/v3';
-// Optional backend origin for DB-backed candles (Flask).
-// Empty string means same-origin; change to your server URL if needed.
-const BACKEND_BASE = '';
 
 /**
  * Thin fetch wrapper for CoinGecko endpoints.
@@ -32,50 +29,6 @@ export type RawCandle = {
     low: number | string;
     close: number | string;
     volume: number | string;
-};
-
-/**
- * Shape returned by the Flask /api/candles endpoint.
- * timestamp is usually in seconds; we normalize to ms below.
- */
-export type DBCandle = {
-    timestamp: number;    // seconds or milliseconds
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume?: number;
-};
-
-/** Normalize unix timestamp to milliseconds (number). */
-function toMillis(ts: number): number {
-    // Heuristic: >= 10^12 → already ms, else seconds
-    return ts >= 1_000_000_000_000 ? ts : ts * 1000;
-}
-
-/**
- * Quick range utility for timeframe strings (1m,5m,15m,1h,4h,1d,1w).
- * Returns [startSec, endSec] in UNIX seconds.
- */
-function timeframeToRange(timeframe: string): [number, number] {
-    const nowSec = Math.floor(Date.now() / 1000);
-    const unit = timeframe.slice(-1);
-    const n = parseInt(timeframe.slice(0, -1), 10);
-    const mult = unit === 'm' ? 60 : unit === 'h' ? 3600 : unit === 'd' ? 86400 : unit === 'w' ? 604800 : 0;
-    const span = isFinite(n) && mult ? n * mult : 86400; // default 1 day
-    return [nowSec - span, nowSec];
-}
-
-/** Minimal coinId → symbol mapping to query the DB (adjust as needed). */
-const COIN_ID_TO_SYMBOL: Record<string, string> = {
-    bitcoin: 'BTC/USDT',
-    ethereum: 'ETH/USDT',
-    solana: 'SOL/USDT',
-    ripple: 'XRP/USDT',
-    cardano: 'ADA/USDT',
-    dogecoin: 'DOGE/USDT',
-    polkadot: 'DOT/USDT',
-    litecoin: 'LTC/USDT',
 };
 
 /**
@@ -122,38 +75,6 @@ export async function fetchCandles(symbol: string, interval: string): Promise<Ra
     }));
 }
 
-/**
- * Fetch candles from the Flask database-backed API instead of CoinGecko.
- *
- * @param coinId   UI coin id (e.g., 'bitcoin')
- * @param timeframe Granularity/window key (e.g., '1m', '1h', '1d')
- * @returns RawCandle[] with timestamps normalized to milliseconds
- */
-export async function fetchCandlesDB(coinId: string, timeframe: string): Promise<RawCandle[]> {
-    const symbol = COIN_ID_TO_SYMBOL[coinId];
-    if (!symbol) {
-        throw new Error(`No DB symbol mapping for coinId: ${coinId}`);
-    }
-    const [start, end] = timeframeToRange(timeframe);
-    const url = `${BACKEND_BASE}/api/candles?symbol=${encodeURIComponent(symbol)}&start=${start}&end=${end}`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`DB API error ${res.status}: ${res.statusText} — ${text}`);
-    }
-    const data = (await res.json()) as DBCandle[];
-
-    // Normalize into RawCandle with ms timestamps; default volume to 0
-    return data.map((c) => ({
-        timestamp: toMillis(c.timestamp),
-        open: Number(c.open),
-        high: Number(c.high),
-        low: Number(c.low),
-        close: Number(c.close),
-        volume: Number(c.volume ?? 0),
-    }));
-}
 
 /**
  * Proxy to CoinGecko market_chart endpoint for auxiliary metrics (prices, mkt cap).
@@ -168,5 +89,4 @@ export async function fetchMarketChart(symbol: string, days: number = 1): Promis
 export default {
     fetchCandles,
     fetchMarketChart,
-    fetchCandlesDB,
 };

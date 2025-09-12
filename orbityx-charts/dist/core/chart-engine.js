@@ -370,4 +370,3 @@ export default class ChartEngine {
         this.canvas.style.cursor = 'default';
     }
 }
-//# sourceMappingURL=chart-engine.js.map

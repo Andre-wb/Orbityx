@@ -119,4 +119,3 @@ class DataManager {
     }
 }
 export default new DataManager();
-//# sourceMappingURL=data-manager.js.map

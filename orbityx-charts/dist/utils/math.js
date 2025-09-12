@@ -90,4 +90,3 @@ const math = {
 };
 // Default export mirrors named exports for legacy consumers.
 export default math;
-//# sourceMappingURL=math.js.map
