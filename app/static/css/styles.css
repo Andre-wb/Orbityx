@@ -32,6 +32,8 @@ html {
     --higher-price: #02ba36;
     --chart-bg: #ffffff;
     --chart-text: #000000;
+    --chart-toolbar: #eaeaf1;
+    --toolbar-text: #5d616e;
 }
 
 /* Dark theme tokens (override the variables from :root) */
