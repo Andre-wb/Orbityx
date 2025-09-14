@@ -48,60 +48,33 @@
             </a>
         </td>
             <!-- Current price in USD (consider a formatter for locale/precision) -->
-        <td class="price_th">
-            {% if coin.current_price is not none %}
-                ${{ coin.current_price }}
-            {% else %}
-                —
-            {% endif %}
-        </td>
+        <td class="price_th">${{ coin.current_price }}</td>
             <!-- 1h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% set v1h = coin.price_change_percentage_1h_in_currency %}
-            {% if v1h is not none %}
-                {% if v1h >= 0 %}
-                    <span class="price_higher_th">+{{ v1h | round(2) }}%</span>
-                {% else %}
-                    <span class="price_lower_th">{{ v1h | round(2) }}%</span>
-                {% endif %}
+            {% if coin.price_change_percentage_1h_in_currency >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
             {% else %}
-                <span class="price_lower_th">—</span>
+            <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
             {% endif %}
         </td>
             <!-- 24h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% set v24h = coin.price_change_percentage_24h %}
-            {% if v24h is not none %}
-                {% if v24h >= 0 %}
-                    <span class="price_higher_th">+{{ v24h | round(2) }}%</span>
-                {% else %}
-                    <span class="price_lower_th">{{ v24h | round(2) }}%</span>
-                {% endif %}
+            {% if coin.price_change_percentage_24h >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
             {% else %}
-                <span class="price_lower_th">—</span>
+            <span class="price_lower_th">{{ coin.price_change_percentage_24h | round(2) }}%</span>
             {% endif %}
         </td>
             <!-- 7d change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% set v7d = coin.price_change_percentage_7d_in_currency %}
-            {% if v7d is not none %}
-                {% if v7d >= 0 %}
-                    <span class="price_higher_th">+{{ v7d | round(2) }}%</span>
-                {% else %}
-                    <span class="price_lower_th">{{ v7d | round(2) }}%</span>
-                {% endif %}
+            {% if coin.price_change_percentage_7d_in_currency >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
             {% else %}
-                <span class="price_lower_th">—</span>
+            <span class="price_lower_th">{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
             {% endif %}
         </td>
             <!-- Market cap formatted with thousands separators -->
-        <td class="marker_cap_th">
-            {% if coin.market_cap is not none %}
-                ${{ "{:,}".format(coin.market_cap | int) }}
-            {% else %}
-                —
-            {% endif %}
-        </td>
+        <td class="marker_cap_th">${{ "{:,}".format(coin.market_cap | int) }}</td>
     </tr>
     {% endfor %}
     </tbody>
