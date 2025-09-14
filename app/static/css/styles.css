@@ -50,6 +50,8 @@ html {
     --higher-price: #0fdc55;
     --chart-bg: #0f1019;
     --chart-text: #f0f5fd;
+    --chart-toolbar: #3b3d50;
+    --toolbar-text: #c0c8da;
 }
 
 body {
@@ -169,11 +171,43 @@ main {
         padding: 15px;
     }
 }
+#chartCanvas {
+    height: 50vh;
+    width: 80vw;
+}
 
 .currency_table {
     font-size: 18px;
     text-align: center;
     position: relative;
+}
+.btn-group {
+    max-width: 500px;
+    display: flex;
+    justify-content: space-between;
+    background: var(--chart-toolbar);
+    border-radius: 10px;
+    transition: 0.1s ease-in-out;
+    padding: 5px 5px;
+}
+.tool-icon img {
+    width: 25px;
+    height: 25px;
+}
+.toolbar-btn {
+    background: none;
+    width: 100%;
+    border: none;
+    color: var(--toolbar-text);
+    border-radius: 10px;
+    padding: 5px 5px;
+    font-weight: 500;
+    font-size: 15px;
+    transition: 0.1s ease-in-out;
+}
+
+.toolbar-btn.active {
+    background: var(--bg-color);
 }
 /* Responsive table layout: sticky first columns on smaller screens */
 @media (min-width: 1024px) {
