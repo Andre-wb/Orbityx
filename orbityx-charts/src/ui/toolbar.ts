@@ -143,7 +143,7 @@ function setupEventListeners(
 
   // --- View controls (zoom/reset) ------------------------------------------
   // Bind zoom/reset buttons by ID with defensive engine calls.
-  const zoomIn = toolbar.querySelector<HTMLButtonElement>('#zoom-in') || toolbar.querySelector<HTMLButtonElement>('#zoomIn');
+  const zoomIn = toolbar.querySelector<HTMLButtonElement>('#zoom-in');
   const zoomOut = toolbar.querySelector<HTMLButtonElement>('#zoom-out') || toolbar.querySelector<HTMLButtonElement>('#zoomOut');
   const resetView = toolbar.querySelector<HTMLButtonElement>('#reset-view') || toolbar.querySelector<HTMLButtonElement>('#resetView');
   zoomIn?.addEventListener('click', () => chartEngine?.zoomIn?.());

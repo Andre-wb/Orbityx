@@ -92,6 +92,7 @@ export default class ChartEngine {
     public config: Config;
     public state: State;
     public dataManager!: DataManagerLike;
+    private chartType: 'candlestick' | 'line' | 'area' = 'candlestick';
 
     /**
      * Create a ChartEngine bound to a specific <canvas> element by id.
@@ -114,8 +115,8 @@ export default class ChartEngine {
         this.config = {
             theme: (localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'),
             darkTheme: {
-                upColor: 'rgba(46, 204, 113, 0.8)',
-                downColor: 'rgba(231, 76, 60, 0.8)',
+                upColor: 'rgba(0, 255, 128, 1)',
+                downColor: 'rgba(255, 0, 0, 0.83)',
                 wickColor: 'rgba(149, 165, 166, 0.8)',
                 bgColor: 'rgba(20, 25, 40, 1)',
                 gridColor: 'rgba(127, 140, 141, 0.2)',
@@ -123,8 +124,8 @@ export default class ChartEngine {
                 priceLineColor: 'rgba(52, 152, 219, 0.7)',
             },
             lightTheme: {
-                upColor: 'rgba(39, 174, 96, 0.7)',
-                downColor: 'rgba(192, 57, 43, 0.7)',
+                upColor: 'rgba(0, 255, 128, 1)',
+                downColor: 'rgba(255, 0, 0, 0.83)',
                 wickColor: 'rgba(100, 100, 100, 0.4)',
                 bgColor: 'rgba(255, 255, 255, 1)',
                 gridColor: 'rgba(200, 200, 200, 0.2)',
@@ -246,7 +247,7 @@ export default class ChartEngine {
         const visibleW = this.state.width - left - right;
         const space = this.config.candleWidth + this.config.candleSpacing;
         const count = Math.floor(visibleW / (space * this.state.scaleX));
-        const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX));
+        const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX / this.state.scaleX));
         const end = Math.min(this.state.data.length, start + count);
 
         this.state.visibleData = this.state.data.slice(start, end);
@@ -433,6 +434,12 @@ export default class ChartEngine {
         this.canvas.addEventListener('mouseleave', this.handleMouseUp);
     }
 
+    public setChartType(chartType: 'candlestick' | 'line' | 'area'): void {
+        this.chartType = chartType;
+        // при необходимости: переключить логику рисования
+        this.draw();
+    }
+
     /**
      * Mouse wheel zoom handler – scales `scaleX` around a fixed center.
      * Prevents default scrolling to keep interaction within the canvas.
@@ -481,7 +488,7 @@ export default class ChartEngine {
         const deltaX = e.clientX - this.state.dragStartX;
         this.state.dragStartX = e.clientX;
         // Translate pixel movement to data-space offset (candles), respecting zoom.
-        this.state.offsetX += deltaX / (this.config.candleWidth + this.config.candleSpacing) / this.state.scaleX;
+        this.state.offsetX += deltaX / ((this.config.candleWidth + this.config.candleSpacing) * this.state.scaleX);
         this.updateVisibleData();
         this.draw();
     }

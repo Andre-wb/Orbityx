@@ -140,7 +140,7 @@ class OrbityxChartApp {
         WS.subscribe?.((data: any) => {
             // On new candle: refresh dataset; engine redraw handles visuals.
             if (data?.type === 'candle' && data?.payload) {
-                if (typeof this.dataManager.subscribe === 'function') {
+                if (this.dataManager.subscribe) {
                     this.chartEngine.setData(this.dataManager.getData() as any);
                     this.chartEngine.draw();
                 } else {

@@ -14,7 +14,7 @@
 :root,
 :root[data-theme="light"] {
     /* Base surfaces */
-    --bg:           #0f1115; /* note: using near-black keeps charts crisp even in "light" variant here */
+    --bg:           #0f1115;
     --surface:      #161a22;
     --surface-2:    #1b212d;
     --border:       #2a3140;

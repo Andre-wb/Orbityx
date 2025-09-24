@@ -157,7 +157,7 @@ export default class ChartEngine {
         const visibleW = this.state.width - left - right;
         const space = this.config.candleWidth + this.config.candleSpacing;
         const count = Math.floor(visibleW / (space * this.state.scaleX));
-        const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX));
+        const start = Math.max(0, this.state.data.length - count - Math.floor(this.state.offsetX / this.state.scaleX));
         const end = Math.min(this.state.data.length, start + count);
         this.state.visibleData = this.state.data.slice(start, end);
         if (this.state.visibleData.length === 0) {
@@ -299,9 +299,9 @@ export default class ChartEngine {
      */
     setupEventListeners() {
         window.addEventListener('resize', this.handleResize);
-        const zoomInBtn = document.getElementById('zoomIn');
-        const zoomOutBtn = document.getElementById('zoomOut');
-        const resetBtn = document.getElementById('resetView');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const resetBtn = document.getElementById('reset-view');
         zoomInBtn?.addEventListener('click', () => this.zoomIn());
         zoomOutBtn?.addEventListener('click', () => this.zoomOut());
         resetBtn?.addEventListener('click', () => this.resetView());
@@ -356,7 +356,7 @@ export default class ChartEngine {
         const deltaX = e.clientX - this.state.dragStartX;
         this.state.dragStartX = e.clientX;
         // Translate pixel movement to data-space offset (candles), respecting zoom.
-        this.state.offsetX += deltaX / (this.config.candleWidth + this.config.candleSpacing) / this.state.scaleX;
+        this.state.offsetX += deltaX / ((this.config.candleWidth + this.config.candleSpacing) * this.state.scaleX);
         this.updateVisibleData();
         this.draw();
     }

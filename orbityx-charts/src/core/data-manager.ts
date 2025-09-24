@@ -141,6 +141,7 @@ class DataManager {
     /**
      * Register a listener for live candle updates. Returns an unsubscribe fn.
      */
+
     subscribe(callback: Subscriber): () => void {
         this._subscribers.push(callback);
         return () => {
