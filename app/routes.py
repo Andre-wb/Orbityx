@@ -24,6 +24,7 @@ from . import db, mail
 from .models import User, OHLCV
 from .config import Config
 from app.services.ccxt_service import CCXTService
+from math import ceil
 
 
 # Application setup: blueprint, services, serializer, and logger

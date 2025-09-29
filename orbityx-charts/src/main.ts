@@ -38,7 +38,6 @@ const CONFIG = {
     // Server endpoint (wss preferred in production)
     WEBSOCKET_URL: 'wss://crypto-ws.example.com/stream'
 };
-
 /**
  * App controller – orchestrates UI, data loading, rendering, and realtime.
  */

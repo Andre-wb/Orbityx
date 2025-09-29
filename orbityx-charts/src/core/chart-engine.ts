@@ -59,6 +59,7 @@ type State = {
     currentPrice: number;
     isDragging: boolean;
     dragStartX: number;
+    chartType: string;
 };
 
 /**
@@ -136,7 +137,6 @@ export default class ChartEngine {
             candleSpacing: 3,
             margin: { top: 30, right: 20, bottom: 50, left: 60 },
         };
-
         this.state = {
             data: [],
             visibleData: [],
@@ -149,6 +149,7 @@ export default class ChartEngine {
             currentPrice: 0,
             isDragging: false,
             dragStartX: 0,
+            chartType: 'candlestick',
         };
 
         this.handleResize = this.handleResize.bind(this);
@@ -203,6 +204,13 @@ export default class ChartEngine {
         this.draw();
     }
 
+    /**
+     * Setting type of chart
+     */
+    setChartType(type: 'candlestick' | 'line' | 'area'): void {
+        this.state.chartType = type;
+        this.draw();
+    }
     /**
      * Match canvas size to its container and update derived state.
      * Note: relies on parent element sizing; ensure the container has layout.
@@ -296,7 +304,19 @@ export default class ChartEngine {
         this.ctx.clearRect(0, 0, this.state.width, this.state.height);
         this.drawBackground();
         this.drawGrid();
-        this.drawCandles();
+
+        switch (this.state.chartType) {
+            case 'candlestick':
+                this.drawCandles();
+                break;
+            case 'line':
+                this.drawLineChart();
+                break;
+            case 'area':
+                this.drawAreaChart();
+                break;
+        }
+
         this.drawCurrentPrice();
     }
 
@@ -359,7 +379,7 @@ export default class ChartEngine {
     }
 
     /**
-     * Render candle bodies and wicks for the visible data window.
+     * Render candle, line and area chart bodies and wicks for the visible data window.
      */
     drawCandles(): void {
         const theme = this.getColors();
@@ -395,6 +415,53 @@ export default class ChartEngine {
         }
 
         this.ctx.restore();
+    }
+    drawLineChart(): void {
+        const theme = this.getColors();
+        this.ctx.strokeStyle = theme.upColor;
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+
+        this.state.visibleData.forEach((c, i) => {
+            const x = this.indexToX(i) + this.config.candleWidth * this.state.scaleX / 2;
+            const y = this.priceToY(c.close);
+            if (i === 0) {
+                this.ctx.moveTo(x, y);
+            } else {
+                this.ctx.lineTo(x, y);
+            }
+        });
+
+        this.ctx.stroke();
+    }
+
+    drawAreaChart(): void {
+        const theme = this.getColors();
+        this.ctx.beginPath();
+
+        this.state.visibleData.forEach((c, i) => {
+            const x = this.indexToX(i) + this.config.candleWidth * this.state.scaleX / 2;
+            const y = this.priceToY(c.close);
+            if (i === 0) {
+                this.ctx.moveTo(x, y);
+            } else {
+                this.ctx.lineTo(x, y);
+            }
+        });
+
+        // закрываем фигуру вниз к минимуму
+        const lastX = this.indexToX(this.state.visibleData.length - 1) +
+            this.config.candleWidth * this.state.scaleX / 2;
+        const baseY = this.priceToY(this.state.minPrice);
+        this.ctx.lineTo(lastX, baseY);
+        this.ctx.lineTo(this.indexToX(0), baseY);
+        this.ctx.closePath();
+
+        this.ctx.fillStyle = theme.upColor.replace('0.8', '0.2'); // прозрачная заливка
+        this.ctx.fill();
+        this.ctx.strokeStyle = theme.upColor;
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
     }
 
     /**

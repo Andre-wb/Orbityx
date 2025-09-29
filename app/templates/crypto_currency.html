@@ -51,23 +51,27 @@
         <td class="price_th">${{ coin.current_price }}</td>
             <!-- 1h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% if coin.price_change_percentage_1h_in_currency >= 0 %}
+            {% if coin.price_change_percentage_1h_in_currency is not none and coin.price_change_percentage_1h_in_currency >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
             {% else %}
-            <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
+            <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) if coin.price_change_percentage_1h_in_currency is not none else 'N/A' }}%</span>
             {% endif %}
         </td>
             <!-- 24h change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% if coin.price_change_percentage_24h >= 0 %}
-            <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
+            {% if coin.price_change_percentage_24h is not none %}
+                {% if coin.price_change_percentage_24h >= 0 %}
+                    <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
+                {% else %}
+                    <span class="price_lower_th">{{ coin.price_change_percentage_24h | round(2) }}%</span>
+                {% endif %}
             {% else %}
-            <span class="price_lower_th">{{ coin.price_change_percentage_24h | round(2) }}%</span>
+                 <span class="price_lower_th">N/A</span>
             {% endif %}
         </td>
             <!-- 7d change: green for >= 0, red otherwise -->
         <td class="change_percentage_th">
-            {% if coin.price_change_percentage_7d_in_currency >= 0 %}
+            {% if coin.price_change_percentage_7d_in_currency is not none and coin.price_change_percentage_7d_in_currency >= 0 %}
             <span class="price_higher_th">+{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
             {% else %}
             <span class="price_lower_th">{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
