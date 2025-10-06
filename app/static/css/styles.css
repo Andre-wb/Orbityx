@@ -15,6 +15,11 @@
 }
 html {
     overflow-x: hidden;
+    overflow-y: hidden;
+}
+html, body {
+    margin: 0;
+    padding: 0;
 }
 /* Light theme tokens (defaults) */
 :root {
@@ -40,7 +45,7 @@ html {
 .dark {
     --bg-color: #0f1019;
     --text-color: #f0f5fd;
-    --accent-color: #1152e3;
+    --accent-color: #1a61ff;
     --accent-shadow: rgba(83, 118, 200, 0.32);
     --button-bg: #404545;
     --border-color: #373A4EFF;
@@ -57,9 +62,57 @@ html {
 }
 
 body {
-    background: var(--bg-color);
+    background: var(--border-color);
+    transition: background 0.4s ease-in-out;
+    font-weight: 600;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    gap: 10px;
+}
+
+.window {
     color: var(--text-color);
-    transition: 0.4s ease-in-out;
+    background: var(--bg-color);
+    border-radius: 10px;
+    overflow: scroll;
+    padding: 20px 25px;
+    min-width: 50px;
+    min-height: 50px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+}
+.unselectable {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently
+                                  not supported by any browser */
+}
+/* Контур при создании */
+.window-outline {
+    border: 10px dashed var(--accent-color);
+    background: var(--accent-shadow);
+    border-radius: 10px;
+    min-width: 50px;
+    min-height: 50px;
+    flex: 1;
+}
+
+.split-container {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    min-width: 50px;
+    min-height: 50px;
+}
+#table_container {
+    padding: 0;
 }
 .hidden {
     opacity: 0;
@@ -77,10 +130,9 @@ a {
     transition: opacity 0.4s ease-in-out;
     opacity: 1;
 }
-header {
-    background: transparent;
-    border-bottom: 1px solid var(--border-color);
-    padding: 15px 20px;
+.header {
+    background: var(--bg-color);
+    padding: 20px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -163,19 +215,9 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(18px);
 }
-
-main {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    @media (max-width: 720px) {
-        padding: 15px;
-    }
-}
-#chartCanvas {
-    height: 50vh;
-    width: 80vw;
+.chart-container, #chartCanvas {
+    width: 100%;
+    height: 100%;
 }
 
 .currency_table {
@@ -199,6 +241,7 @@ main {
 .toolbar-btn {
     background: none;
     width: 100%;
+    height: 100%;
     border: none;
     color: var(--toolbar-text);
     border-radius: 10px;
@@ -211,21 +254,18 @@ main {
 .toolbar-btn.active {
     background: var(--bg-color);
 }
+
+.element::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
 /* Responsive table layout: sticky first columns on smaller screens */
 @media (min-width: 1024px) {
-    .table_container {
-        width: 80vw;
-    }
     .name_th {
         text-align: left;
         padding-left: 100px;
     }
 }
 @media (max-width: 1024px) {
-    .table_container {
-        max-width: 100vw;
-        overflow-x: auto;
-    }
     .currency_table {
         border-collapse: collapse;
         font-size: 15px;

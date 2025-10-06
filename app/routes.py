@@ -53,9 +53,37 @@ def base_page():
     """Render a minimal template that demonstrates the base layout."""
     return render_template('basic.html')
 
+@main.route('/test')
+def test_page():
+    return render_template('test.html')
+
 # Market list page pulling data from CoinGecko
 @main.route('/currency')
 def crypto_currency_page():
+    # Simple CSRF-only form included for potential actions
+    form = EmptyForm()
+
+    # Fetch latest 1m BTC/USDT candles (limit 1000), newest first
+    entries = (OHLCV.query
+               .filter_by(symbol='BTC/USDT', timeframe='1m')
+               .order_by(OHLCV.timestamp.desc())
+               .limit(1000)
+               .all())
+
+    # Guard: show a warning and redirect if database has no candles
+    if not entries:
+        flash('В базе нет свечей', 'warning')
+        return redirect(url_for('main.introduce_page'))
+
+    # Adapt DB rows to the JSON shape expected by the frontend (seconds)
+    candles = [{
+        'timestamp': int(e.timestamp / 1000),
+        'open'  : e.open,
+        'high'  : e.high,
+        'low'   : e.low,
+        'close' : e.close,
+    } for e in reversed(entries)]
+
     # Fetch top coins by market cap with 1h/24h/7d change percentages
     coins = cg.get_coins_markets(
         vs_currency='usd',
@@ -64,8 +92,8 @@ def crypto_currency_page():
         page=1,
         price_change_percentage='1h,24h,7d'
     )
-    return render_template('crypto_currency.html', coins=coins)
-
+    return render_template('crypto_currency.html', coins=coins, candles=candles,
+    form=form)
 # ---------- Forms ------------------------------------------------------------
 
 # Authentication form (email/phone/username + password)
@@ -294,35 +322,7 @@ def get_color(name):
     colors = ["#FFB6C1", "#87CEFA", "#FFD700", "#98FB98", "#DDA0DD", "#F0E68C", "#20B2AA"]
     return colors[hash(name) % len(colors)]
 
-# ---------- Candles & charts -------------------------------------------------
-
-@main.route('/btc/chart', methods=['GET', 'POST'])
-def btc_chart():
-    # Simple CSRF-only form included for potential actions
-    form = EmptyForm()
-    # Fetch latest 1m BTC/USDT candles (limit 1000), newest first
-    entries = (OHLCV.query
-               .filter_by(symbol='BTC/USDT', timeframe='1m')
-               .order_by(OHLCV.timestamp.desc())
-               .limit(1000)
-               .all())
-    # Guard: show a warning and redirect if database has no candles
-    if not entries:
-        flash('В базе нет свечей', 'warning')
-        return redirect(url_for('main.introduce_page'))
-
-    # Adapt DB rows to the JSON shape expected by the frontend (seconds)
-    candles = [{
-        'timestamp': int(e.timestamp / 1000),
-        'open'  : e.open,
-        'high'  : e.high,
-        'low'   : e.low,
-        'close' : e.close,
-    } for e in reversed(entries)]
-
-    return render_template('btc_candlestick.html',
-                           candles=candles,
-                           form=form)
+# ---------- Candles -------------------------------------------------
 
 @main.route('/load/full_data', methods=['GET', 'POST'])
 def load_full_data():

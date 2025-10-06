@@ -1,0 +1,7 @@
+.chart.page {
+    position: relative;
+}
+.chart-tooltip {
+    position: absolute;
+    z-index: 10;
+}

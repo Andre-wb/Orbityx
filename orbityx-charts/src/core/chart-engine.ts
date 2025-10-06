@@ -207,10 +207,6 @@ export default class ChartEngine {
     /**
      * Setting type of chart
      */
-    setChartType(type: 'candlestick' | 'line' | 'area'): void {
-        this.state.chartType = type;
-        this.draw();
-    }
     /**
      * Match canvas size to its container and update derived state.
      * Note: relies on parent element sizing; ensure the container has layout.

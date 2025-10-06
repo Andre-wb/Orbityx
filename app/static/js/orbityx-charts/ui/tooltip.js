@@ -7,7 +7,6 @@ export function initTooltip(chartEngine) {
     const tooltip = document.createElement('div');
     tooltip.id = 'chart-tooltip';
     tooltip.className = 'chart-tooltip';
-    document.body.appendChild(tooltip);
     // Static HTML template for header, OHLC rows, volume bar and indicators.
     tooltip.innerHTML = `
     <div class="tooltip-header">
