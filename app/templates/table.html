@@ -1,0 +1,68 @@
+<!-- Currency table: name, price, % changes, and market cap -->
+<table class="currency_table">
+    <!-- Table header: column labels -->
+    <thead class="currency_thead">
+    <tr id="currency_thead">
+        <!-- Row index, coin name/symbol, current price, % changes, market cap -->
+        <th class="number_t">#</th>
+        <th class="name_t">Название</th>
+        <th>Цена</th>
+        <th>% 1 ч</th>
+        <th>% 24 ч</th>
+        <th>% 7 дн</th>
+        <th>Рын. кап.</th>
+    </tr>
+    </thead>
+    <!-- Table body: iterate over coins provided by the backend -->
+    <tbody>
+    {# Jinja loop over the list of coin dicts/objects #}
+    {% for coin in coins %}
+    <!-- One row per coin -->
+    <tr class="currency_row">
+        <!-- Sequential index starting at 1 (loop.index) -->
+        <td class="number_th">{{ loop.index }}</td>
+        <!-- Name cell: link to per-coin chart page with icon and symbol -->
+        <td class="name_th">
+            <!-- Uses coin.id to build the URL to the chart view -->
+            <a href="{{ url_for('main.introduce_page', coin_id=coin.id) }}" class="coin_name">
+                <!-- Coin icon from API payload (20px); alt shows full name -->
+                <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
+                {{ coin.name }} ({{ coin.symbol|upper }})
+            </a>
+        </td>
+        <!-- Current price in USD (consider a formatter for locale/precision) -->
+        <td class="price_th">${{ coin.current_price }}</td>
+        <!-- 1h change: green for >= 0, red otherwise -->
+        <td class="change_percentage_th">
+            {% if coin.price_change_percentage_1h_in_currency is not none and coin.price_change_percentage_1h_in_currency >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_1h_in_currency | round(2) }}%</span>
+            {% else %}
+            <span class="price_lower_th">{{ coin.price_change_percentage_1h_in_currency | round(2) if coin.price_change_percentage_1h_in_currency is not none else 'N/A' }}%</span>
+            {% endif %}
+        </td>
+        <!-- 24h change: green for >= 0, red otherwise -->
+        <td class="change_percentage_th">
+            {% if coin.price_change_percentage_24h is not none %}
+            {% if coin.price_change_percentage_24h >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_24h | round(2) }}%</span>
+            {% else %}
+            <span class="price_lower_th">{{ coin.price_change_percentage_24h | round(2) }}%</span>
+            {% endif %}
+            {% else %}
+            <span class="price_lower_th">N/A</span>
+            {% endif %}
+        </td>
+        <!-- 7d change: green for >= 0, red otherwise -->
+        <td class="change_percentage_th">
+            {% if coin.price_change_percentage_7d_in_currency is not none and coin.price_change_percentage_7d_in_currency >= 0 %}
+            <span class="price_higher_th">+{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
+            {% else %}
+            <span class="price_lower_th">{{ coin.price_change_percentage_7d_in_currency | round(2) }}%</span>
+            {% endif %}
+        </td>
+        <!-- Market cap formatted with thousands separators -->
+        <td class="marker_cap_th">${{ "{:,}".format(coin.market_cap | int) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
