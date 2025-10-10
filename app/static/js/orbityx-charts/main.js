@@ -256,8 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-<<<<<<< HEAD
-=======
 
 // === main.js ===
 function initOrbityxChart({ root, canvas, toolbar, loading, error, priceEl } = {}) {
@@ -309,6 +307,5 @@ document.addEventListener('orbityx:chart-mount', (e) => {
     initOrbityxChart({ root: e.detail.root });
 });
 
->>>>>>> e6caae8 (Исправление багов)
 export default OrbityxChartApp;
 //# sourceMappingURL=main.js.map

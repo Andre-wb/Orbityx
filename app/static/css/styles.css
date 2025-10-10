@@ -139,7 +139,6 @@ a {
     transition: 0.4s ease-in-out;
     gap: 10px
 }
-/* Top navigation layout */
 #navigation {
     display: flex;
     align-items: center;
