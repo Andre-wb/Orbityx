@@ -772,3 +772,19 @@ table {
     transform: rotate(-45deg);
     top: 20px;
 }
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+}
+
+.chart-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.chart-page {
+    width: 100%;
+    height: 100%;
+}

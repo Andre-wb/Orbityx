@@ -26,11 +26,13 @@ class OrbityxChartApp {
     /**
      * Initialize instance fields and bind to the canvas-backed ChartEngine.
      */
-    constructor() {
-        this.symbol = CONFIG.DEFAULT_SYMBOL;
-        this.timeframe = CONFIG.DEFAULT_TIMEFRAME;
+    constructor(options = {}) {
+        this.symbol = options.symbol || CONFIG.DEFAULT_SYMBOL;
+        this.timeframe = options.timeframe || CONFIG.DEFAULT_TIMEFRAME;
         this.dataManager = dataManager;
-        this.chartEngine = new ChartEngine('chartCanvas');
+        const canvasId = options.canvasId || 'chartCanvas';
+        this.chartEngine = new ChartEngine(canvasId);
+        this.appInstance = null;
     }
     /**
      * Boot sequence: build UI, apply theme, load history, start realtime,
@@ -254,5 +256,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+<<<<<<< HEAD
+=======
+
+// === main.js ===
+function initOrbityxChart({ root, canvas, toolbar, loading, error, priceEl } = {}) {
+    const scope = root || document;
+
+    // Используем классы вместо ID для избежания конфликтов
+    const cvs = canvas || scope.querySelector('.chart-canvas');
+    const tb = toolbar || scope.querySelector('.chart-toolbar');
+    const ld = loading || scope.querySelector('.loading-indicator');
+    const er = error || scope.querySelector('.error-notification');
+    const price = priceEl || scope.querySelector('.symbol-price');
+
+    if (!cvs) {
+        console.warn('initOrbityxChart: canvas not found');
+        return null;
+    }
+
+    try {
+        // Создаем уникальные ID для этого экземпляра
+        const instanceId = 'chart_' + Date.now();
+        cvs.id = instanceId + '_canvas';
+        if (tb) tb.id = instanceId + '_toolbar';
+        if (ld) ld.id = instanceId + '_loading';
+        if (er) er.id = instanceId + '_error';
+        if (price) price.id = instanceId + '_price';
+
+        // Создаем и инициализируем приложение
+        const app = new OrbityxChartApp({
+            canvasId: cvs.id,
+            toolbarId: tb?.id,
+            loadingId: ld?.id,
+            errorId: er?.id,
+            priceId: price?.id
+        });
+
+        app.init().catch(console.error);
+        return app;
+    } catch (error) {
+        console.error('Failed to initialize chart:', error);
+        return null;
+    }
+}
+
+window.initOrbityxChart = initOrbityxChart;
+
+window.initOrbityxChart = initOrbityxChart;
+
+document.addEventListener('orbityx:chart-mount', (e) => {
+    initOrbityxChart({ root: e.detail.root });
+});
+
+>>>>>>> e6caae8 (Исправление багов)
 export default OrbityxChartApp;
 //# sourceMappingURL=main.js.map
