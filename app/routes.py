@@ -53,9 +53,46 @@ def base_page():
     """Render a minimal template that demonstrates the base layout."""
     return render_template('basic.html')
 
-@main.route('/test')
-def test_page():
-    return render_template('test.html')
+@main.route('/template/<template_name>')
+def get_template(template_name):
+    form = EmptyForm()
+
+    # Fetch latest 1m BTC/USDT candles (limit 1000), newest first
+    entries = (OHLCV.query
+               .filter_by(symbol='BTC/USDT', timeframe='1m')
+               .order_by(OHLCV.timestamp.desc())
+               .limit(1000)
+               .all())
+
+    # Guard: show a warning and redirect if database has no candles
+    if not entries:
+        flash('В базе нет свечей', 'warning')
+        return redirect(url_for('main.introduce_page'))
+
+    # Adapt DB rows to the JSON shape expected by the frontend (seconds)
+    candles = [{
+        'timestamp': int(e.timestamp / 1000),
+        'open'  : e.open,
+        'high'  : e.high,
+        'low'   : e.low,
+        'close' : e.close,
+    } for e in reversed(entries)]
+
+    # Fetch top coins by market cap with 1h/24h/7d change percentages
+    coins = cg.get_coins_markets(
+        vs_currency='usd',
+        order='market_cap_desc',
+        per_page=50,
+        page=1,
+        price_change_percentage='1h,24h,7d'
+    )
+    allowed_templates = ['navigation', 'table', 'chart', 'settings']
+
+    if template_name not in allowed_templates:
+        return "Template not found", 404
+
+    return render_template(f'{template_name}.html', coins=coins, candles=candles,
+    form=form)
 
 # Market list page pulling data from CoinGecko
 @main.route('/currency')
