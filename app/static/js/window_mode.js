@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "График": "/template/chart",
         "Настройки": "/template/settings"
     };
+
     async function loadTemplate(templateUrl) {
         try {
             const response = await fetch(templateUrl);
@@ -23,15 +24,40 @@ document.addEventListener("DOMContentLoaded", () => {
             return `<div class="error">Ошибка загрузки шаблона</div>`;
         }
     }
-    allWindows.forEach((windows) => {
-        if (windows.classList.contains(`unselectable`)) {
-            windows.classList.remove(`unselectable`);
-        } else {
-            windows.classList.add(`unselectable`);
+
+    function removeWindow(windowElement) {
+        const container = windowElement.parentElement;
+
+        windowElement.remove();
+
+        const remainingWindows = container.querySelectorAll('.window');
+
+        if (container.classList.contains('split-container') && remainingWindows.length === 1) {
+            const remainingWindow = remainingWindows[0];
+            container.replaceWith(remainingWindow);
         }
-    })
+        else if (container.children.length === 0) {
+            container.remove();
+        }
+    }
+
+    function addCloseButtonHandler(closeButton, win) {
+        closeButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            removeWindow(win);
+        });
+    }
+
     function createWindowMenu(win) {
         const set = document.createElement("select");
+        const close_button = document.createElement("button");
+        const X_line = document.createElement("span");
+        const Y_line = document.createElement("span");
+
+
+        X_line.classList.add("x-line");
+        Y_line.classList.add("y-line");
+        close_button.classList.add("close_button");
         set.classList.add("window_settings");
 
         options.forEach(opt => {
@@ -41,18 +67,23 @@ document.addEventListener("DOMContentLoaded", () => {
             set.appendChild(option);
         });
 
+        close_button.appendChild(X_line);
+        close_button.appendChild(Y_line);
+        win.appendChild(close_button);
         win.appendChild(set);
 
         const display = document.createElement("div");
         display.classList.add("window_text");
         win.appendChild(display);
 
+        addCloseButtonHandler(close_button, win);
+
         set.addEventListener("change", async () => {
             const templateUrl = textForOption[set.value];
             if (templateUrl) {
                 display.innerHTML = "Загрузка...";
-                const html = await loadTemplate(templateUrl);
-                display.innerHTML = html;
+                const html_loaded = await loadTemplate(templateUrl);
+                display.innerHTML = html_loaded;
 
                 initializeLoadedContent(display);
             } else {
@@ -106,11 +137,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             allWindows.forEach((windows) => {
-                windows.classList.add(unselectable);
+                windows.classList.add('unselectable');
             });
         }
     });
-
 
     body.addEventListener("mousemove", (e) => {
         if (!isDrawing || !outline) return;
@@ -123,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let wrapper = targetWindow.parentElement;
 
         if (Math.abs(dx) > Math.abs(dy)) {
-            // Горизонтальное деление
             if (!wrapper.classList.contains("split-container") || wrapper.style.flexDirection !== "row") {
                 const container = document.createElement("div");
                 container.classList.add("split-container");
@@ -135,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.appendChild(outline);
             }
         } else {
-            // Вертикальное деление
             if (!wrapper.classList.contains("split-container") || wrapper.style.flexDirection !== "column") {
                 const container = document.createElement("div");
                 container.classList.add("split-container");
@@ -149,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
     body.addEventListener("mouseup", () => {
         if (!isDrawing || !outline) return;
         isDrawing = false;
@@ -159,15 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         outline.replaceWith(newWindow);
 
-        // Создаем меню для нового окна
         createWindowMenu(newWindow);
 
         outline = null;
         targetWindow = null;
         allWindows.forEach((windows) => {
             windows.classList.remove(`unselectable`);
-        })
+        });
     });
-
-
 });

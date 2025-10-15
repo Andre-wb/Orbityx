@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     html.classList.toggle('dark', startDark);
     if (toggle)
         toggle.checked = startDark;
-    // Initialize image sources for the current theme to avoid mismatched visuals.
     if (logo)
         logo.src = startDark ? darkLogo : lightLogo;
     if (intro_binance_picture)
