@@ -27,6 +27,7 @@ html, body {
     --text-color: #0c0c0c;
     --accent-color: #4272df;
     --accent-shadow: rgba(0, 0, 0, 0.2);
+    --window-shadow: rgba(0, 0, 0, 0);
     --button-bg: #000000;
     --border-color: #b5b5b5;
     --press-bg: #4f824f;
@@ -46,7 +47,8 @@ html, body {
     --bg-color: #0f1019;
     --text-color: #f0f5fd;
     --accent-color: #1a61ff;
-    --accent-shadow: rgba(83, 118, 200, 0.32);
+    --accent-shadow: rgba(112, 171, 237, 0.18);
+    --window-shadow: rgba(112, 171, 237, 0.07);
     --button-bg: #404545;
     --border-color: #373A4EFF;
     --press-bg: #22a03f;
@@ -86,8 +88,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     position: relative;
+    box-shadow: inset var(--window-shadow);
 }
 .unselectable {
     -webkit-touch-callout: none; /* iOS Safari */
@@ -122,8 +124,6 @@ body {
 .close_button {
     width: 50px;
     aspect-ratio: 1/1;
-    background: none;
-    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -132,13 +132,15 @@ body {
     position: sticky;
     top: 0;
     right: 0;
-    opacity: 0.3;
     transition: 0.1s ease-in-out;
     z-index: 23;
     border-radius: 25%;
 }
-.close_button:hover {
-    opacity: 1;
+.window_settings, .close_button {
+    backdrop-filter: blur(3px);
+    background: none;
+    border: none;
+    box-shadow: none;
 }
 .window_settings {
     position: sticky;
@@ -146,23 +148,25 @@ body {
     left: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    text-align: center;
     align-items: center;
     align-self: flex-start;
     justify-self: flex-start;
     z-index: 23;
-    border: var(--accent-color);
-    color: var(--text-color);
-    aspect-ratio: 1/1;
     background: none;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 15px;
+    border-radius: 20px;
+    padding: 15px 10px;
+    color: var(--text-color);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     outline: none;
     cursor: pointer;
     -webkit-box-shadow: none;
-    box-shadow: none;
-    -webkit-tap-highlight-color: transparent;
 }
 .x-line, .y-line {
     width: 20px;
@@ -170,6 +174,8 @@ body {
     background: var(--text-color);
     border-radius: 25%;
     position: absolute;
+    opacity: 0.3;
+    transition: 0.2s;
 }
 .x-line {
     transform: rotate(45deg);
@@ -177,7 +183,9 @@ body {
 .y-line {
     transform: rotate(-45deg);
 }
-
+.close_button:hover .x-line .y-line {
+    opacity: 1;
+}
 .hidden {
     opacity: 0;
     transform: translateY(20px);
@@ -224,9 +232,9 @@ a {
     color: var(--accent-color);
 }
 #navigation a {
-    color: var(--text-color);
+    color: var(--accent-color);
     font-weight: 600;
-    transition: color 0.4s ease;
+    transition: 0.4s ease;
     letter-spacing: 1px;
 }
 

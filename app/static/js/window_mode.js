@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const body = document.body;
     let outline = null;
     let isDrawing = false;
@@ -14,11 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
         "Настройки": "/template/settings"
     };
 
+    const templateCache = new Map();
+
     async function loadTemplate(templateUrl) {
+        if (templateCache.has(templateUrl)) {
+            return templateCache.get(templateUrl);
+        }
+
         try {
             const response = await fetch(templateUrl);
             if (!response.ok) throw new Error('Template not found');
-            return await response.text();
+            const html = await response.text();
+
+            templateCache.set(templateUrl, html);
+            return html;
         } catch (error) {
             console.error('Error loading template:', error);
             return `<div class="error">Ошибка загрузки шаблона</div>`;
@@ -48,12 +57,48 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function createWindowMenu(win) {
+    function waitForElement(selector, timeout = 5000) {
+        return new Promise((resolve, reject) => {
+            const element = document.querySelector(selector);
+            if (element) {
+                resolve(element);
+                return;
+            }
+
+            const observer = new MutationObserver((mutations, obs) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    obs.disconnect();
+                    resolve(element);
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            setTimeout(() => {
+                observer.disconnect();
+                reject(new Error(`Element ${selector} not found within ${timeout}ms`));
+            }, timeout);
+        });
+    }
+
+    function initializeLoadedContent(display) {
+        console.log('Content loaded in window, other scripts will auto-initialize');
+
+        const event = new CustomEvent('contentLoaded', {
+            detail: { container: display }
+        });
+        document.dispatchEvent(event);
+    }
+
+    async function createWindowMenu(win, initialOptionIndex = null) {
         const set = document.createElement("select");
         const close_button = document.createElement("button");
         const X_line = document.createElement("span");
         const Y_line = document.createElement("span");
-
 
         X_line.classList.add("x-line");
         Y_line.classList.add("y-line");
@@ -67,6 +112,10 @@ document.addEventListener("DOMContentLoaded", () => {
             set.appendChild(option);
         });
 
+        if (initialOptionIndex !== null && initialOptionIndex < options.length) {
+            set.selectedIndex = initialOptionIndex;
+        }
+
         close_button.appendChild(X_line);
         close_button.appendChild(Y_line);
         win.appendChild(close_button);
@@ -78,8 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         addCloseButtonHandler(close_button, win);
 
-        set.addEventListener("change", async () => {
-            const templateUrl = textForOption[set.value];
+        const loadAndDisplayContent = async () => {
+            const selectedOption = set.value;
+            const templateUrl = textForOption[selectedOption];
             if (templateUrl) {
                 display.innerHTML = "Загрузка...";
                 const html_loaded = await loadTemplate(templateUrl);
@@ -89,11 +139,22 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 display.innerHTML = "";
             }
-        });
+        };
+
+        await loadAndDisplayContent();
+
+        set.addEventListener("change", loadAndDisplayContent);
     }
 
-    const windows = document.querySelectorAll(".window");
-    windows.forEach(win => createWindowMenu(win));
+    const initializeWindows = async () => {
+        for (let i = 0; i < allWindows.length; i++) {
+            // Каждому окну назначаем соответствующую опцию по порядку
+            const optionIndex = i < options.length ? i : 0;
+            await createWindowMenu(allWindows[i], optionIndex);
+        }
+    };
+
+    await initializeWindows();
 
     function isClickOnEmptySpace(e) {
         return e.target === body;
@@ -177,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    body.addEventListener("mouseup", () => {
+    body.addEventListener("mouseup", async () => {
         if (!isDrawing || !outline) return;
         isDrawing = false;
 
@@ -186,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         outline.replaceWith(newWindow);
 
-        createWindowMenu(newWindow);
+        await createWindowMenu(newWindow, 0);
 
         outline = null;
         targetWindow = null;

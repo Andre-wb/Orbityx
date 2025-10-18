@@ -12,9 +12,6 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/window_mode.js') }}" onload="console.log('window_mode loaded')"></script>
 <script src="{{ url_for('static', filename='js/ThemeToggle.js') }}" onload="console.log('ThemeToggle loaded')"></script>
-<script src="{{ url_for('static', filename='js/items_animation.js') }}" onload="console.log('items_animation loaded')"></script>
-<script src="{{ url_for('static', filename='js/rotate_animations.js') }}" onload="console.log('rotate_animations loaded')"></script>
-<script src="{{ url_for('static', filename='js/parallax_animations.js') }}" onload="console.log('parallax_animations loaded')"></script>
 <script type="module" src="{{ url_for('static', filename='js/orbityx-charts/main.js') }}" onload="console.log('charts loaded')"></script>
 {% endblock %}
 {% block content %}
@@ -25,4 +22,3 @@
 <div class="window"></div>
 
 {% endblock %}
-
