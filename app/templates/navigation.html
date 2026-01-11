@@ -1,0 +1,26 @@
+<div class="logo">
+  <img id="logo" src="" alt="Logo" width="60" height="60">
+</div>
+<div id="navigation">
+  <div class="binance-links">
+    <a href="/">О нас</a>
+    <a href="/currency">Криптовалюты</a>
+  </div>
+  <div class="binance-login">
+    {% if current_user.is_authenticated %}
+    <a href="/profile">Профиль</a>
+    {% else %}
+    <a href="{{ url_for('main.login') }}">Войти</a>
+    <a class="register-link" href="{{ url_for('main.register_user') }}">Зарегистрироваться</a>
+    {% endif %}
+  </div>
+</div>
+<label class="theme-switch" id="theme-switch">
+  <input type="checkbox" id="theme-toggle">
+  <span class="slider"></span>
+</label>
+<button class="menu-button">
+  <span class="top-line line"></span>
+  <span class="center-line line"></span>
+  <span class="bottom-line line"></span>
+</button>

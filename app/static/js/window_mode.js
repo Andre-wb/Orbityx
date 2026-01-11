@@ -1,3 +1,48 @@
+async function initializeSplitLineHandlers() {
+    document.body.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('split_line')) {
+            e.preventDefault();
+            const splitLine = e.target;
+            const windowElement = splitLine.closest('.window');
+            const startY = e.clientY;
+            const startHeight = parseInt(document.defaultView.getComputedStyle(windowElement).height, 10);
+
+            function onMouseMove(e) {
+                const dy = e.clientY - startY;
+                const newHeight = startHeight + dy;
+
+                if (newHeight >= 50) {
+                    windowElement.style.height = newHeight + 'px';
+                    windowElement.style.flex = 'none';
+                }
+            }
+
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.body.style.userSelect = '';
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            document.body.style.userSelect = 'none';
+        }
+    });
+
+    document.body.addEventListener('mouseenter', function(e) {
+        if (e.target.classList.contains('split_line')) {
+            e.target.closest('.window').classList.add('window-hover');
+        }
+    }, true);
+
+    document.body.addEventListener('mouseleave', function(e) {
+        if (e.target.classList.contains('split_line')) {
+            e.target.closest('.window').classList.remove('window-hover');
+        }
+    }, true);
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     const body = document.body;
     let outline = null;
@@ -34,6 +79,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    function initializeSplitLineHover() {
+        document.querySelectorAll('.split_line').forEach(splitLine => {
+            splitLine.addEventListener('mouseenter', function() {
+                this.closest('.window').classList.add('window-hover');
+            });
+
+            splitLine.addEventListener('mouseleave', function() {
+                this.closest('.window').classList.remove('window-hover');
+            });
+        });
+    }
     function removeWindow(windowElement) {
         const container = windowElement.parentElement;
 
@@ -99,11 +155,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         const close_button = document.createElement("button");
         const X_line = document.createElement("span");
         const Y_line = document.createElement("span");
+        const split_line = document.createElement("button");
 
         X_line.classList.add("x-line");
         Y_line.classList.add("y-line");
         close_button.classList.add("close_button");
         set.classList.add("window_settings");
+        split_line.classList.add("split_line");
 
         options.forEach(opt => {
             const option = document.createElement("option");
@@ -120,6 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         close_button.appendChild(Y_line);
         win.appendChild(close_button);
         win.appendChild(set);
+        win.appendChild(split_line);
 
         const display = document.createElement("div");
         display.classList.add("window_text");
@@ -148,10 +207,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const initializeWindows = async () => {
         for (let i = 0; i < allWindows.length; i++) {
-            // Каждому окну назначаем соответствующую опцию по порядку
             const optionIndex = i < options.length ? i : 0;
             await createWindowMenu(allWindows[i], optionIndex);
         }
+        initializeSplitLineHover();
     };
 
     await initializeWindows();
@@ -255,4 +314,5 @@ document.addEventListener("DOMContentLoaded", async () => {
             windows.classList.remove(`unselectable`);
         });
     });
+    initializeSplitLineHandlers();
 });
