@@ -102,15 +102,10 @@ def crypto_currency_page():
 
     # Fetch latest 1m BTC/USDT candles (limit 1000), newest first
     entries = (OHLCV.query
-               .filter_by(symbol='BTC/USDT', timeframe='1m')
-               .order_by(OHLCV.timestamp.desc())
-               .limit(1000)
-               .all())
-
-    # Guard: show a warning and redirect if database has no candles
-    if not entries:
-        flash('В базе нет свечей', 'warning')
-        return redirect(url_for('main.introduce_page'))
+                   .filter_by(symbol='BTC/USDT', timeframe='1m')
+                   .order_by(OHLCV.timestamp.desc())
+                   .limit(1000)
+                   .all())
 
     # Adapt DB rows to the JSON shape expected by the frontend (seconds)
     candles = [{

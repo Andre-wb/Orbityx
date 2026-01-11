@@ -10,10 +10,5 @@
 </head>
 <body>
 {% block content %}{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/items_animation.js') }}" onload="console.log('items_animation loaded')"></script>
-<script src="{{ url_for('static', filename='js/parallax_animations.js') }}" onload="console.log('parallax_animations loaded')"></script>
-<script src="{{ url_for('static', filename='js/rotate_animations.js') }}" onload="console.log('rotate_animations loaded')"></script>
-{% endblock %}
 </body>
 </html>
