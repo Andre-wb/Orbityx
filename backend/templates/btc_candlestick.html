@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}BTC / Candlestick{% endblock %}
+
+{% block content %}
+<section class="chart-page">
+    <div class="chart-header">
+        <h1>BTC / USD</h1>
+        <div class="legend">
+            <span class="legend-label">Last price:</span>
+            <span class="symbol-price">$0.00</span>
+            <span id="frame-rate" class="frame-rate"></span>
+        </div>
+    </div>
+    <!-- Add error notification element -->
+    <div id="error-notification" class="error-notification" style="display:none;">
+        <div class="error-title"></div>
+        <div class="error-message"></div>
+    </div>
+
+    <!-- Toolbar with correct ID -->
+    <div id="toolbar" class="chart-toolbar"></div>
+
+    <div class="chart-container">
+        <canvas id="chartCanvas"></canvas>
+
+        <!-- Add chart controls -->
+        <div class="chart-controls" style="display:none;">
+            <button id="zoom-in" class="control-btn" title="Zoom In">+</button>
+            <button id="zoom-out" class="control-btn" title="Zoom Out">-</button>
+            <button id="reset-view" class="control-btn" title="Reset View">↺</button>
+        </div>
+    </div>
+
+    <!-- Loading indicator with correct ID -->
+    <div id="loading-indicator" class="loading-indicator" style="display:none;">
+        <div class="spinner"></div>
+        <div>Loading data…</div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/orbityx-charts/main.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!--
+  Crypto currencies listing page
+  Notes:
+  - Extends base layout and renders a table of coins provided by the view.
+  - Uses Jinja2 loops/conditions to format changes and market cap.
+  - Comments only; no markup/logic changes.
+-->
+{% extends 'base.html' %}
+<!-- Page <title> text -->
+{% block title %}Актуальный рейтинг криптовалют на Orbityx{% endblock %}
+<!-- Main content: heading and a responsive table of coins -->
+{% block content %}
+<script src="{{ url_for('static', filename='js/ThemeToggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/window_mode.js') }}"></script>
+
+<div class="window"></div>
+<div class="window"></div>
+<div class="window"></div>
+<div class="window"></div>
+
+{% endblock %}
