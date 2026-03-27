@@ -1,21 +1,159 @@
-<!--
-  Crypto currencies listing page
-  Notes:
-  - Extends base layout and renders a table of coins provided by the view.
-  - Uses Jinja2 loops/conditions to format changes and market cap.
-  - Comments only; no markup/logic changes.
--->
-{% extends 'base.html' %}
-<!-- Page <title> text -->
-{% block title %}Актуальный рейтинг криптовалют на Orbityx{% endblock %}
-<!-- Main content: heading and a responsive table of coins -->
+{% extends "base.html" %}
+{% block title %}Рынок | Orbityx{% endblock %}
+
 {% block content %}
-<script src="{{ url_for('static', filename='js/ThemeToggle.js') }}"></script>
-<script src="{{ url_for('static', filename='js/window_mode.js') }}"></script>
+<style>
+.market-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.market-header h1 { font-size: 1.6rem; font-weight: 700; }
+.search-wrap { position: relative; }
+.search-wrap input {
+    padding: 9px 14px 9px 38px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: .9rem; width: 220px; outline: none;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: .9rem; }
+.coin-table { width: 100%; border-collapse: collapse; }
+.coin-table th { text-align: left; padding: 10px 14px; font-size: .8rem; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.coin-table th:hover { color: var(--text); }
+.coin-table td { padding: 12px 14px; font-size: .9rem; border-bottom: 1px solid rgba(30,34,48,.6); }
+.coin-table tr:hover td { background: rgba(255,255,255,.02); }
+.coin-name-cell { display: flex; align-items: center; gap: 10px; }
+.coin-name-cell img { width: 28px; height: 28px; border-radius: 50%; }
+.coin-symbol { color: var(--text-muted); font-size: .8rem; }
+.up { color: var(--green); } .dn { color: var(--red); }
+.loading { text-align: center; padding: 60px; color: var(--text-muted); }
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.pagination { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+.pagination button {
+    padding: 7px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); cursor: pointer; font-size: .85rem; transition: background .15s;
+}
+.pagination button:hover, .pagination button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+</style>
 
-<div class="window"></div>
-<div class="window"></div>
-<div class="window"></div>
-<div class="window"></div>
+<div class="market-header">
+    <h1>Крипторынок</h1>
+    <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" placeholder="Поиск монеты...">
+    </div>
+</div>
 
+<div class="table-wrap">
+    <div id="loading" class="loading">Загрузка данных...</div>
+    <table class="coin-table" id="coin-table" style="display:none">
+        <thead>
+            <tr>
+                <th data-sort="rank">#</th>
+                <th data-sort="name">Монета</th>
+                <th data-sort="price">Цена</th>
+                <th data-sort="h1">% 1ч</th>
+                <th data-sort="h24">% 24ч</th>
+                <th data-sort="d7">% 7д</th>
+                <th data-sort="cap">Рын. кап.</th>
+                <th data-sort="vol">Объём 24ч</th>
+            </tr>
+        </thead>
+        <tbody id="coin-body"></tbody>
+    </table>
+</div>
+<div class="pagination" id="pagination"></div>
+
+<script>
+let allCoins = [], page = 1, perPage = 50, sortKey = 'rank', sortAsc = true, query = '';
+
+function fmt(n) {
+    if (n == null) return 'N/A';
+    if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+    if (n >= 1e9)  return '$' + (n/1e9).toFixed(2)  + 'B';
+    if (n >= 1e6)  return '$' + (n/1e6).toFixed(2)  + 'M';
+    return '$' + n.toLocaleString('en', {maximumFractionDigits: 2});
+}
+function fmtPrice(p) {
+    if (p == null) return 'N/A';
+    if (p >= 1000) return '$' + p.toLocaleString('en', {maximumFractionDigits: 2});
+    if (p >= 1)    return '$' + p.toFixed(4);
+    return '$' + p.toFixed(8);
+}
+function pct(v) {
+    if (v == null) return '<span class="dn">N/A</span>';
+    const cls = v >= 0 ? 'up' : 'dn';
+    return `<span class="${cls}">${v >= 0 ? '+' : ''}${v.toFixed(2)}%</span>`;
+}
+
+async function loadCoins() {
+    try {
+        const res = await fetch(`/api/market/coins?per_page=250&page=1`);
+        allCoins = res.ok ? await res.json() : [];
+    } catch { allCoins = []; }
+    render();
+}
+
+function filtered() {
+    let list = allCoins;
+    if (query) list = list.filter(c => c.name.toLowerCase().includes(query) || c.symbol.toLowerCase().includes(query));
+    list = [...list].sort((a, b) => {
+        const map = { rank: 'market_cap_rank', name: 'name', price: 'current_price', h1: 'price_change_percentage_1h_in_currency', h24: 'price_change_percentage_24h', d7: 'price_change_percentage_7d_in_currency', cap: 'market_cap', vol: 'total_volume' };
+        const k = map[sortKey] || 'market_cap_rank';
+        const av = a[k] ?? (sortAsc ? Infinity : -Infinity);
+        const bv = b[k] ?? (sortAsc ? Infinity : -Infinity);
+        return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
+    return list;
+}
+
+function render() {
+    const list = filtered();
+    const total = Math.ceil(list.length / perPage);
+    const slice = list.slice((page-1)*perPage, page*perPage);
+
+    document.getElementById('loading').style.display = 'none';
+    const tbl = document.getElementById('coin-table');
+    tbl.style.display = '';
+
+    const tbody = document.getElementById('coin-body');
+    tbody.innerHTML = slice.map(c => `
+        <tr>
+            <td>${c.market_cap_rank ?? '—'}</td>
+            <td>
+                <a href="/chart?symbol=${c.symbol.toUpperCase()}/USDT" style="text-decoration:none;color:inherit">
+                    <div class="coin-name-cell">
+                        <img src="${c.image}" alt="${c.symbol}" onerror="this.style.display='none'">
+                        <div>
+                            <div>${c.name}</div>
+                            <div class="coin-symbol">${c.symbol.toUpperCase()}</div>
+                        </div>
+                    </div>
+                </a>
+            </td>
+            <td>${fmtPrice(c.current_price)}</td>
+            <td>${pct(c.price_change_percentage_1h_in_currency)}</td>
+            <td>${pct(c.price_change_percentage_24h)}</td>
+            <td>${pct(c.price_change_percentage_7d_in_currency)}</td>
+            <td>${fmt(c.market_cap)}</td>
+            <td>${fmt(c.total_volume)}</td>
+        </tr>`).join('');
+
+    const pag = document.getElementById('pagination');
+    pag.innerHTML = '';
+    for (let i = 1; i <= Math.min(total, 10); i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i; if (i === page) btn.classList.add('active');
+        btn.onclick = () => { page = i; render(); };
+        pag.appendChild(btn);
+    }
+}
+
+document.getElementById('search').addEventListener('input', e => { query = e.target.value.toLowerCase(); page = 1; render(); });
+document.querySelectorAll('.coin-table th').forEach(th => {
+    th.addEventListener('click', () => {
+        const k = th.dataset.sort;
+        if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = true; }
+        render();
+    });
+});
+
+loadCoins();
+</script>
 {% endblock %}

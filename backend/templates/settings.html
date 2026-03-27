@@ -1,74 +1,137 @@
-<div class="toolbar-group">
-    <div class="toolbar-label">Timeframe:</div>
-    <div class="btn-group">
-        <button class="toolbar-btn active" data-timeframe="1m">1m</button>
-        <button class="toolbar-btn" data-timeframe="5m">5m</button>
-        <button class="toolbar-btn" data-timeframe="15m">15m</button>
-        <button class="toolbar-btn" data-timeframe="1h">1h</button>
-        <button class="toolbar-btn" data-timeframe="4h">4h</button>
-        <button class="toolbar-btn" data-timeframe="1d">1d</button>
-        <button class="toolbar-btn" data-timeframe="1w">1w</button>
+{% extends "base.html" %}
+{% block title %}Настройки | Orbityx{% endblock %}
+
+{% block content %}
+<style>
+.settings-page { max-width: 680px; margin: 0 auto; }
+.settings-page h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 32px; }
+.settings-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; margin-bottom: 20px; }
+.settings-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+.settings-row:first-of-type { padding-top: 0; }
+.settings-label { font-size: .95rem; }
+.settings-label small { display: block; color: var(--text-muted); font-size: .8rem; margin-top: 2px; }
+.toggle { position: relative; width: 44px; height: 24px; }
+.toggle input { display: none; }
+.toggle-track { position: absolute; inset: 0; border-radius: 12px; background: var(--border); cursor: pointer; transition: background .2s; }
+.toggle input:checked + .toggle-track { background: var(--accent); }
+.toggle-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .2s; }
+.toggle input:checked + .toggle-track::after { left: 23px; }
+.settings-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 8px; font-size: .9rem; outline: none; cursor: pointer; }
+.settings-select:focus { border-color: var(--accent); }
+.save-btn { background: var(--accent); color: #fff; border: none; padding: 11px 28px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .15s; margin-top: 8px; }
+.save-btn:hover { background: var(--accent-hover); }
+.save-msg { display: none; color: var(--green); font-size: .9rem; margin-top: 12px; }
+</style>
+
+<div class="settings-page">
+    <h1>Настройки</h1>
+
+    <div class="settings-section">
+        <h2>Интерфейс</h2>
+        <div class="settings-row">
+            <div class="settings-label">
+                Тёмная тема
+                <small>Использовать тёмное оформление</small>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="setting-dark-theme" checked>
+                <div class="toggle-track"></div>
+            </label>
+        </div>
+        <div class="settings-row">
+            <div class="settings-label">Язык</div>
+            <select class="settings-select" id="setting-lang">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+            </select>
+        </div>
     </div>
+
+    <div class="settings-section">
+        <h2>График</h2>
+        <div class="settings-row">
+            <div class="settings-label">Таймфрейм по умолчанию</div>
+            <select class="settings-select" id="setting-timeframe">
+                <option value="1m">1 минута</option>
+                <option value="5m">5 минут</option>
+                <option value="15m">15 минут</option>
+                <option value="1h" selected>1 час</option>
+                <option value="4h">4 часа</option>
+                <option value="1d">1 день</option>
+            </select>
+        </div>
+        <div class="settings-row">
+            <div class="settings-label">Тип графика</div>
+            <select class="settings-select" id="setting-chart-type">
+                <option value="candlestick" selected>Свечи</option>
+                <option value="heikin_ashi">Хейкин Аши</option>
+                <option value="line">Линия</option>
+                <option value="area">Область</option>
+            </select>
+        </div>
+        <div class="settings-row">
+            <div class="settings-label">
+                Показывать сетку
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="setting-grid" checked>
+                <div class="toggle-track"></div>
+            </label>
+        </div>
+        <div class="settings-row">
+            <div class="settings-label">
+                AI-прогнозы
+                <small>Показывать предсказания на графике</small>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="setting-ai" checked>
+                <div class="toggle-track"></div>
+            </label>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2>Уведомления</h2>
+        <div class="settings-row">
+            <div class="settings-label">
+                Ценовые оповещения
+                <small>Push-уведомления при достижении цены</small>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="setting-alerts">
+                <div class="toggle-track"></div>
+            </label>
+        </div>
+    </div>
+
+    <button class="save-btn" id="save-settings">Сохранить</button>
+    <div class="save-msg" id="save-msg">Настройки сохранены</div>
 </div>
 
-<div class="toolbar-group">
-    <div class="toolbar-label">Chart Type:</div>
-    <div class="btn-group">
-        <button class="toolbar-btn active" data-chart-type="candlestick" title="Candlestick">
-            <i class="tool-icon">
-                <img src="/static/img/candles-regular-108.png" alt="candle icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" data-chart-type="line" title="Line">
-            <i class="tool-icon">
-                <img src="/static/img/line-chart-regular-108.png" alt="line icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" data-chart-type="area" title="Area">
-            <i class="tool-icon">
-                <img src="/static/img/landscape-solid-108.png" alt="landscape icon">
-            </i>
-        </button>
-    </div>
-</div>
+<script>
+    const KEYS = ['dark-theme', 'lang', 'timeframe', 'chart-type', 'grid', 'ai', 'alerts'];
 
-<div class="toolbar-group">
-    <div class="toolbar-label">Tools:</div>
-    <div class="btn-group">
-        <button class="toolbar-btn" id="zoom-in" title="Zoom In">
-            <i class="tool-icon">
-                <img src="/static/img/zoom-in-solid-108.png" alt="zoom in icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" id="zoom-out" title="Zoom Out">
-            <i class="tool-icon">
-                <img src="/static/img/zoom-out-solid-108.png" alt="zoom out icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" id="reset-view" title="Reset View">
-            <i class="tool-icon">
-                <img src="/static/img/reset-regular-144.png" alt="reload icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" id="draw-trendline" title="Trendline">
-            <i class="tool-icon">
-                <img src="/static/img/pencil-solid-108.png" alt="draw icon">
-            </i>
-        </button>
-        <button class="toolbar-btn" id="draw-fibonacci" title="Fibonacci">
-            <i class="tool-icon">
-                <img src="/static/img/line-chart-regular-108.png" alt="draw2 icon">
-            </i>
-        </button>
-        <button id="fullscreen" class="toolbar-btn" title="Fullscreen">
-            <i class="tool-icon">
-                <img src="/static/img/fullscreen-regular-108.png" alt="fullscreen icon">
-            </i>
-        </button>
-        <button id="settings" class="toolbar-btn" title="Settings">
-            <i class="tool-icon">
-                <img src="/static/img/cog-solid-108.png" alt="cog icon">
-            </i>
-        </button>
-    </div>
-</div>
+    // Load saved settings
+    KEYS.forEach(k => {
+        const el = document.getElementById('setting-' + k);
+        if (!el) return;
+        const val = localStorage.getItem('setting_' + k);
+        if (val === null) return;
+        if (el.type === 'checkbox') el.checked = val === 'true';
+        else el.value = val;
+    });
+
+    document.getElementById('save-settings').addEventListener('click', () => {
+        KEYS.forEach(k => {
+            const el = document.getElementById('setting-' + k);
+            if (!el) return;
+            localStorage.setItem('setting_' + k, el.type === 'checkbox' ? el.checked : el.value);
+        });
+        const msg = document.getElementById('save-msg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 2000);
+    });
+</script>
+{% endblock %}

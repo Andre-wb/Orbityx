@@ -1,0 +1,131 @@
+{
+  "name": "orbityx-chart-pro",
+  "version": "2.0.0",
+  "description": "Professional-grade, provider-agnostic, canvas-based OHLCV charting library. Zero dependencies, TypeScript-first. Supports candlestick, Heikin Ashi, line, area and bar charts with technical indicators, drawing tools, live WebSocket streaming and infinite backwards history scroll.",
+  "type": "module",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    },
+    "./providers/binance": {
+      "import": "./dist/providers/examples/binance.js",
+      "types": "./dist/providers/examples/binance.d.ts"
+    },
+    "./providers/coingecko": {
+      "import": "./dist/providers/examples/coingecko.js",
+      "types": "./dist/providers/examples/coingecko.d.ts"
+    },
+    "./providers/generic-rest": {
+      "import": "./dist/providers/examples/generic_rest.js",
+      "types": "./dist/providers/examples/generic_rest.d.ts"
+    },
+    "./providers/mock": {
+      "import": "./dist/providers/examples/mock.js",
+      "types": "./dist/providers/examples/mock.d.ts"
+    },
+    "./utils/math": {
+      "import": "./dist/utils/math.js",
+      "types": "./dist/utils/math.d.ts"
+    },
+    "./utils/format": {
+      "import": "./dist/utils/format.js",
+      "types": "./dist/utils/format.d.ts"
+    },
+    "./orbitscript": {
+      "import": "./dist/orbitscript/index.js",
+      "types": "./dist/orbitscript/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "styles/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "build:watch": "tsc --project tsconfig.json --watch",
+    "dev": "npx serve . --port 3000 --no-clipboard",
+    "typecheck": "tsc --noEmit",
+    "lint": "npx eslint src/",
+    "lint:fix": "npx eslint src/ --fix",
+    "format": "npx prettier --write \"src/**/*.ts\"",
+    "format:check": "npx prettier --check \"src/**/*.ts\"",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});\"",
+    "prebuild": "npm run clean",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.2.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "chart",
+    "charting",
+    "candlestick",
+    "heikin-ashi",
+    "ohlcv",
+    "trading",
+    "financial",
+    "finance",
+    "typescript",
+    "canvas",
+    "technical-analysis",
+    "indicators",
+    "rsi",
+    "macd",
+    "bollinger-bands",
+    "moving-average",
+    "ema",
+    "sma",
+    "crypto",
+    "stocks",
+    "forex",
+    "binance",
+    "coingecko",
+    "websocket",
+    "real-time",
+    "zero-dependencies"
+  ],
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Boris Malts",
+    "url": "https://github.com/BorisMalts"
+  },
+  "contributors": [
+    {
+      "name": "Boris Maltsev",
+      "url": "https://github.com/BorisMalts"
+    },
+    {
+      "name": "Andrey Karavaev",
+      "url": "https://github.com/Andre-wb"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BorisMalts/Orbityx-charts.git"
+  },
+  "homepage": "https://github.com/BorisMalts/Orbityx-charts#readme",
+  "bugs": {
+    "url": "https://github.com/BorisMalts/Orbityx-charts/issues"
+  },
+  "sideEffects": false
+}

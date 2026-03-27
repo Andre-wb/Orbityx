@@ -8,8 +8,8 @@ Usage:
 Notes:
 - Comments only; no functional changes.
 """
-from app import create_app, db
-from app.models import OHLCV
+from backend import create_app, db
+from backend.models import OHLCV
 import ccxt
 from datetime import datetime
 from sqlalchemy import func

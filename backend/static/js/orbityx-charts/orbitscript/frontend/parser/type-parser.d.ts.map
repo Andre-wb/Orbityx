@@ -1,0 +1,1 @@
+{"version":3,"file":"type-parser.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/frontend/parser/type-parser.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,QAAQ,EAAE,MAAM,yBAAyB,CAAC;AACxD,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,mBAAmB,CAAC;AAErD,wBAAgB,aAAa,CAAC,EAAE,EAAE,WAAW,GAAG,QAAQ,CA6CvD;AAED,wBAAgB,QAAQ,CAAC,EAAE,EAAE,WAAW,GAAG,OAAO,CAKjD"}

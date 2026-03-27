@@ -1,5 +1,16 @@
 {
+  "name": "orbityx",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --project ../../Downloads/orbityx/tsconfig.json",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('frontend/dist',{recursive:true,force:true});\"",
+    "prebuild": "npm run clean",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5.4.0"
   }
 }

@@ -97,3 +97,23 @@ class Config:
     COINGECKO_API_KEY = os.getenv('COINGECKO_API_KEY')
     BINANCE_API_KEY = os.getenv('BINANCE_API_KEY')
     BINANCE_API_SECRET = os.getenv('BINANCE_API_SECRET')
+
+
+class Settings:
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me-in-production")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./orbityx.db")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+
+    SMTP_SERVER: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+
+    COINGECKO_API_KEY: str = os.getenv("COINGECKO_API_KEY", "")
+    BINANCE_API_KEY: str = os.getenv("BINANCE_API_KEY", "")
+    BINANCE_API_SECRET: str = os.getenv("BINANCE_API_SECRET", "")
+
+    ALGORITHM: str = "HS256"
+
+
+settings = Settings()

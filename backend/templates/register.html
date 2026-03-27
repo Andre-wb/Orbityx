@@ -1,93 +1,62 @@
-<!--
-  Registration page template
-  Notes:
-  - Extends base.html and renders a registration form using WTForms.
-  - Shows per-field errors and flashed messages from Flask.
-  - Comments only; no markup/logic changes.
--->
-{% extends 'base.html' %}
-<!-- Page <title> block -->
+{% extends "base.html" %}
 {% block title %}Регистрация | Orbityx{% endblock %}
-<!-- Main content: registration form card -->
+
 {% block content %}
-
-    <!-- Card container styled via .form-container -->
-<div class="form-container">
-    <h2>Регистрация</h2>
-        <!-- WTForms-based registration; POST to current route -->
-    <form method="POST">
-            <!-- CSRF and hidden fields -->
-        {{ form.hidden_tag() }}
-
-            <!-- Username field -->
-        <div class="form-group">
-            {{ form.username.label(class="form-label") }}
-            {{ form.username(class_="form-control") }}
-                <!-- Inline validation errors for username -->
-            {% for error in form.username.errors %}
-            <div class="error">{{ error }}</div>
-            {% endfor %}
+<div class="form-page">
+    <div class="form-card">
+        <h2>Создать аккаунт</h2>
+        <div class="form-error" id="err"></div>
+        <div class="form-success" id="ok">Аккаунт создан! <a href="/login">Войти</a></div>
+        <form id="reg-form">
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" id="username" placeholder="username" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="email@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="tel" id="phone" placeholder="+7 999 000 00 00" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="password" placeholder="минимум 8 символов" required>
+            </div>
+            <button type="submit" class="form-submit" id="submit-btn">Зарегистрироваться</button>
+        </form>
+        <div class="form-footer">
+            Уже есть аккаунт? <a href="/login">Войти</a>
         </div>
-
-            <!-- Email field -->
-        <div class="form-group">
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class_="form-control") }}
-                <!-- Inline validation errors for email -->
-            {% for error in form.email.errors %}
-            <div class="error">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-            <!-- Phone field (optional per form validation rules) -->
-        <div class="form-group">
-            {{ form.phone.label(class="form-label") }}
-            {{ form.phone(class_="form-control") }}
-                <!-- Inline validation errors for phone -->
-            {% for error in form.phone.errors %}
-            <div class="error">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-            <!-- Password field -->
-        <div class="form-group">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class_="form-control") }}
-                <!-- Inline validation errors for password -->
-            {% for error in form.password.errors %}
-            <div class="error">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-            <!-- Password confirmation field -->
-        <div class="form-group">
-            {{ form.confirm.label(class="form-label") }}
-            {{ form.confirm(class_="form-control") }}
-                <!-- Inline validation errors for password confirmation -->
-            {% for error in form.confirm.errors %}
-            <div class="error">{{ error }}</div>
-            {% endfor %}
-        </div>
-
-            <!-- Submit button -->
-        <button type="submit" class="submit-button">Зарегистрироваться</button>
-    </form>
-
-    <!-- Global flashed messages (e.g., registration success/failure) -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <!-- Container for categorized alerts -->
-    <div class="flash-messages mt-3">
-        {% for category, message in messages %}
-            <!-- Each flash message rendered with its Bootstrap-like category -->
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
     </div>
-    {% endif %}
-    {% endwith %}
-
-    <!-- Link to login page for existing users -->
-    <p class="log-subtext">Уже есть аккаунт? <a href="{{ url_for('main.login') }}" class="login-link"> Войти </a> </p>
 </div>
-
+<script>
+document.getElementById('reg-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = document.getElementById('err');
+    const ok  = document.getElementById('ok');
+    const btn = document.getElementById('submit-btn');
+    err.style.display = 'none'; ok.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Регистрируем...';
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                email:    document.getElementById('email').value,
+                phone:    document.getElementById('phone').value,
+                password: document.getElementById('password').value,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Ошибка регистрации');
+        ok.style.display = 'block';
+        document.getElementById('reg-form').reset();
+    } catch(ex) {
+        err.textContent = ex.message; err.style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = 'Зарегистрироваться';
+});
+</script>
 {% endblock %}

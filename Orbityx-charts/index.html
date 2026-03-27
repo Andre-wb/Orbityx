@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orbityx Chart Pro — Advanced Financial Charting</title>
+    <meta name="description" content="Professional-grade trading charts with real-time data, technical indicators, and drawing tools." />
+
+    <!-- Theme CSS first to avoid flash of unstyled content -->
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+
+    <!-- Fonts (preconnect for speed) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ── Loading overlay ──────────────────────────────────────────────────── -->
+<div id="loading-indicator" class="loading-indicator">
+    <div class="spinner"></div>
+    <span class="loading-text">Loading market data…</span>
+</div>
+
+<!-- ── Error notification ───────────────────────────────────────────────── -->
+<div id="error-notification" class="error-notification">
+    <div class="error-title"></div>
+    <div class="error-message"></div>
+    <button class="error-dismiss" aria-label="Dismiss">✕</button>
+</div>
+
+<!-- ── App shell ────────────────────────────────────────────────────────── -->
+<div class="app-container">
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <a class="logo" href="#" aria-label="Orbityx Chart Pro">
+                <div class="logo-mark">O</div>
+                <span class="logo-text">Orbityx</span>
+                <span class="logo-badge">PRO</span>
+            </a>
+        </div>
+
+        <div class="header-center">
+            <div class="symbol-selector">
+                <select id="symbol-select" aria-label="Select trading pair">
+                    <!-- Populated dynamically from COINS registry -->
+                    <option value="bitcoin">BTC/USD — Bitcoin</option>
+                    <option value="ethereum">ETH/USD — Ethereum</option>
+                    <option value="solana">SOL/USD — Solana</option>
+                    <option value="ripple">XRP/USD — XRP</option>
+                    <option value="cardano">ADA/USD — Cardano</option>
+                    <option value="dogecoin">DOGE/USD — Dogecoin</option>
+                    <option value="polkadot">DOT/USD — Polkadot</option>
+                    <option value="litecoin">LTC/USD — Litecoin</option>
+                    <option value="avalanche-2">AVAX/USD — Avalanche</option>
+                    <option value="chainlink">LINK/USD — Chainlink</option>
+                    <option value="uniswap">UNI/USD — Uniswap</option>
+                    <option value="stellar">XLM/USD — Stellar</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <button id="theme-toggle" class="header-btn" title="Toggle theme" aria-label="Toggle theme">
+                <span class="theme-icon">☀️</span>
+            </button>
+            <button id="fullscreen-btn" class="header-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+            <button id="settings-btn"   class="header-btn" title="Settings"   aria-label="Settings">⚙</button>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+        <!-- Chart section -->
+        <section class="chart-section">
+            <!-- Toolbar injected by JS -->
+            <div id="toolbar" class="chart-toolbar" role="toolbar" aria-label="Chart controls"></div>
+
+            <!-- Canvas container -->
+            <div class="chart-container">
+                <canvas id="chartCanvas" role="img" aria-label="Price chart" style="touch-action: none;"></canvas>
+                <div id="chart-summary" class="sr-only" role="status" aria-live="polite"
+                     style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+                  Chart loading...
+                </div>
+            </div>
+        </section>
+
+        <!-- Legend / stats panel -->
+        <aside class="legend-panel">
+            <div class="panel-header">
+                <h2>Market Data</h2>
+                <span id="stat-change" class="stat-badge badge-up">0.00%</span>
+            </div>
+
+            <div class="panel-content">
+
+                <!-- Symbol info -->
+                <div class="symbol-info">
+                    <div class="symbol-icon" style="color: #f7931a;">₿</div>
+                    <div class="symbol-details">
+                        <div class="symbol-name">Bitcoin (BTC/USD)</div>
+                        <div class="symbol-price tnum">$--.--</div>
+                        <div class="price-change">--</div>
+                    </div>
+                </div>
+
+                <!-- 24h stats grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">24H High</div>
+                        <div class="stat-value tnum" id="stat-high">$--.--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">24H Low</div>
+                        <div class="stat-value tnum" id="stat-low">$--.--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">24H Volume</div>
+                        <div class="stat-value tnum" id="stat-volume">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Market Cap</div>
+                        <div class="stat-value tnum" id="stat-marketcap">--</div>
+                    </div>
+                </div>
+
+                <!-- Technical indicators -->
+                <div class="indicators-section">
+                    <div class="section-title">Active Indicators</div>
+                    <div class="indicators-list" id="active-indicators-list">
+                        <span style="font-size:11px;color:var(--text-3);">None — use toolbar to add</span>
+                    </div>
+                </div>
+
+                <!-- Timeframe selector (sidebar mirror) -->
+                <div class="timeframe-section">
+                    <div class="section-title">Timeframe</div>
+                    <div class="timeframe-controls">
+                        <button class="timeframe-btn" data-timeframe="1m">1m</button>
+                        <button class="timeframe-btn" data-timeframe="5m">5m</button>
+                        <button class="timeframe-btn" data-timeframe="15m">15m</button>
+                        <button class="timeframe-btn" data-timeframe="1h">1h</button>
+                        <button class="timeframe-btn" data-timeframe="4h">4h</button>
+                        <button class="timeframe-btn active" data-timeframe="1d">1d</button>
+                        <button class="timeframe-btn" data-timeframe="1w">1w</button>
+                        <button class="timeframe-btn" data-timeframe="1month">1M</button>
+                    </div>
+                </div>
+
+                <!-- Alerts section -->
+                <div class="indicators-section">
+                    <div class="section-title">Price Alerts</div>
+                    <div id="alerts-list" style="font-size:11px;color:var(--text-3);">
+                        <span>None — use toolbar to add</span>
+                    </div>
+                </div>
+
+                <!-- Keyboard shortcuts hint -->
+                <div style="padding: 10px; background: var(--surface-2); border-radius: var(--radius-xs); border: 1px solid var(--border);">
+                    <div class="section-title" style="margin-bottom:6px;">Keyboard Shortcuts</div>
+                    <div style="font-size:11px;color:var(--text-3);display:grid;gap:4px;font-family:'JetBrains Mono',monospace;">
+                        <span><kbd>+</kbd> / <kbd>-</kbd> Zoom in/out</span>
+                        <span><kbd>←</kbd> <kbd>→</kbd> Pan history</span>
+                        <span><kbd>Home</kbd> Reset view</span>
+                        <span><kbd>Esc</kbd> Cancel / Stop replay</span>
+                        <span><kbd>L</kbd> Scale (Lin/Log/%)</span>
+                        <span><kbd>M</kbd> Magnet mode</span>
+                        <span><kbd>Ctrl+S</kbd> Screenshot</span>
+                        <span><kbd>Space</kbd> Play/Pause replay</span>
+                        <span><kbd>?</kbd> All shortcuts</span>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </main>
+
+    <!-- Status bar -->
+    <footer class="status-bar">
+        <div class="status-left">
+      <span id="connection-status" class="status-item">
+        <span class="status-dot disconnected"></span>Offline
+      </span>
+            <span id="data-latency" class="status-item">Latency: --ms</span>
+        </div>
+        <div class="status-center">
+            <span id="last-update" class="status-item">Last update: --</span>
+        </div>
+        <div class="status-right">
+            <span id="frame-rate" class="status-item">-- FPS</span>
+        </div>
+    </footer>
+</div>
+
+<!-- ── Settings Modal ───────────────────────────────────────────────────── -->
+<div id="settings-modal" class="modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="settings-title">Chart Settings</h2>
+            <button class="modal-close" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:var(--text-2);font-size:13px;">Advanced settings panel — coming soon.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Bootstrap ────────────────────────────────────────────────────────── -->
+<!--
+  In production, compile TypeScript with `npx tsc` and reference dist/main.js.
+  For development with a bundler (Vite/esbuild/Parcel), point to src/main.ts.
+-->
+<script type="module" src="dist/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1562 @@
+{% extends "base.html" %}
+{% block title %}OrbitScript Dev | Orbityx{% endblock %}
+
+{% block content %}
+<style>
+main { padding: 0 !important; max-width: 100% !important; }
+
+/* ═══════════ DESIGN TOKENS ═══════════ */
+.dev-root {
+    --c-bg:      #0d1117;
+    --c-surface: #161b22;
+    --c-panel:   #0d1117;
+    --c-border:  #21262d;
+    --c-border2: #30363d;
+    --c-accent:  #58a6ff;
+    --c-green:   #3fb950;
+    --c-red:     #f85149;
+    --c-purple:  #bc8cff;
+    --c-yellow:  #e3b341;
+    --c-muted:   #484f58;
+    --c-muted2:  #6e7681;
+    --c-text:    #c9d1d9;
+    --c-text2:   #8b949e;
+    --mono: 'JetBrains Mono','Fira Code',Consolas,monospace;
+    height: calc(100vh - var(--nav-h));
+    overflow: hidden;
+    background: var(--c-bg);
+    color: var(--c-text);
+    display: flex; flex-direction: column;
+}
+
+/* ═══════════ SHARED BTN ═══════════ */
+.dbtn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--c-border2);
+    background: var(--c-surface); color: var(--c-text2);
+    font-family: system-ui, sans-serif;
+    font-size: .78rem; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    transition: color .12s, background .12s, border-color .12s;
+    line-height: 1;
+}
+.dbtn:hover { color: var(--c-text); border-color: var(--c-accent); }
+.dbtn-green { background: rgba(63,185,80,.12); border-color: rgba(63,185,80,.4); color: var(--c-green); font-weight: 600; }
+.dbtn-green:hover { background: rgba(63,185,80,.22); }
+.dbtn-blue  { background: rgba(88,166,255,.12); border-color: rgba(88,166,255,.4); color: var(--c-accent); font-weight: 600; }
+.dbtn-blue:hover { background: rgba(88,166,255,.22); }
+
+/* ═══════════ ── PROJECTS HUB ── ═══════════ */
+#view-projects {
+    flex: 1; overflow-y: auto; padding: 0;
+    background: var(--c-bg);
+}
+.hub-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--c-border);
+    display: flex; align-items: center; gap: 12px;
+}
+.hub-header h1 {
+    font-family: system-ui, sans-serif;
+    font-size: 1.2rem; font-weight: 700; color: var(--c-text);
+    letter-spacing: -.01em; margin: 0;
+}
+.hub-header-right { margin-left: auto; display: flex; gap: 8px; }
+
+.hub-body { padding: 24px 32px; }
+.hub-section-title {
+    font-family: system-ui, sans-serif;
+    font-size: .72rem; font-weight: 600; color: var(--c-muted2);
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: 14px;
+}
+.proj-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+.proj-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px; padding: 18px 16px;
+    cursor: pointer; position: relative;
+    transition: border-color .15s, transform .1s;
+    font-family: system-ui, sans-serif;
+}
+.proj-card:hover { border-color: var(--c-accent); transform: translateY(-2px); }
+.proj-card-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(88,166,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; font-size: 1.1rem;
+}
+.proj-card-name {
+    font-size: .95rem; font-weight: 600; color: var(--c-text);
+    margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.proj-card-meta { font-size: .75rem; color: var(--c-muted2); }
+.proj-card-del {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 5px;
+    background: transparent; border: none;
+    color: var(--c-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .12s, color .12s;
+}
+.proj-card:hover .proj-card-del { opacity: 1; }
+.proj-card-del:hover { color: var(--c-red); }
+
+.proj-empty {
+    text-align: center; padding: 60px 20px;
+    font-family: system-ui, sans-serif;
+    color: var(--c-muted2);
+}
+.proj-empty-icon { font-size: 3rem; margin-bottom: 14px; }
+.proj-empty h3 { font-size: 1.05rem; color: var(--c-text2); margin-bottom: 8px; }
+.proj-empty p  { font-size: .88rem; margin-bottom: 20px; }
+
+/* ═══════════ ── IDE VIEW ── ═══════════ */
+#view-ide { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+
+/* IDE Topbar */
+.dev-topbar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 14px; height: 46px;
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+    flex-shrink: 0;
+}
+.topbar-back {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 8px; border-radius: 5px;
+    background: none; border: none; cursor: pointer;
+    color: var(--c-muted2); font-size: .78rem; font-family: system-ui, sans-serif;
+    transition: color .12s;
+}
+.topbar-back:hover { color: var(--c-text); }
+.topbar-divider { width: 1px; height: 18px; background: var(--c-border2); margin: 0 4px; }
+.topbar-project-name {
+    font-family: system-ui, sans-serif; font-size: .82rem; font-weight: 600;
+    color: var(--c-text2); max-width: 140px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+
+/* IDE Body */
+.dev-body { flex: 1; display: flex; overflow: hidden; }
+
+/* File tree */
+.file-tree {
+    width: 190px; flex-shrink: 0;
+    background: var(--c-panel); border-right: 1px solid var(--c-border);
+    display: flex; flex-direction: column; overflow: hidden;
+    font-family: system-ui, sans-serif;
+}
+.file-tree-header {
+    padding: 8px 10px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--c-border);
+    flex-shrink: 0;
+}
+.file-tree-title {
+    font-size: .68rem; font-weight: 600;
+    color: var(--c-muted2); text-transform: uppercase; letter-spacing: .08em;
+}
+.file-tree-add {
+    width: 20px; height: 20px; border-radius: 4px;
+    background: none; border: none; cursor: pointer;
+    color: var(--c-muted2); display: flex; align-items: center; justify-content: center;
+    transition: color .12s, background .12s;
+}
+.file-tree-add:hover { color: var(--c-accent); background: rgba(88,166,255,.1); }
+.file-tree-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+.file-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px; cursor: pointer; position: relative;
+    border-radius: 5px; margin: 1px 4px;
+    font-size: .82rem; color: var(--c-text2);
+    transition: background .1s, color .1s;
+}
+.file-item:hover { background: var(--c-surface); color: var(--c-text); }
+.file-item.active { background: rgba(88,166,255,.12); color: var(--c-accent); }
+.file-item-del {
+    position: absolute; right: 6px;
+    width: 16px; height: 16px; border-radius: 3px;
+    background: none; border: none; cursor: pointer;
+    color: var(--c-muted); opacity: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .12s, color .12s;
+}
+.file-item:hover .file-item-del { opacity: 1; }
+.file-item-del:hover { color: var(--c-red); }
+
+/* Insert panel (tab inside file tree) */
+.tree-tabs {
+    display: flex; border-bottom: 1px solid var(--c-border); flex-shrink: 0;
+}
+.tree-tab {
+    flex: 1; padding: 6px; text-align: center;
+    font-size: .72rem; font-weight: 500; color: var(--c-muted2);
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: color .12s;
+}
+.tree-tab.active { color: var(--c-text); border-bottom-color: var(--c-accent); }
+
+/* Insert sidebar (reuse dev-sidebar styles) */
+.dev-sidebar {
+    display: none; flex-direction: column;
+    overflow: hidden;
+}
+.dev-sidebar.tree-visible { display: flex; flex: 1; overflow: hidden; }
+.sidebar-content { flex: 1; overflow-y: auto; }
+
+.s-section { padding: 8px 0 4px; }
+.s-section-title { padding: 2px 10px 4px; font-size: .67rem; font-weight: 600; color: var(--c-muted2); text-transform: uppercase; letter-spacing: .08em; }
+.s-item { padding: 4px 10px; font-size: .8rem; color: var(--c-text2); cursor: pointer; display: flex; align-items: center; gap: 6px; border-radius: 4px; margin: 0 4px; transition: background .1s, color .1s; }
+.s-item:hover { background: var(--c-surface); color: var(--c-text); }
+.s-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.s-badge { font-size: .65rem; padding: 1px 5px; border-radius: 3px; background: rgba(88,166,255,.15); color: var(--c-accent); margin-left: auto; }
+.s-code { font-family: var(--mono); color: var(--c-purple); font-size: .75rem; }
+
+/* Main editor area */
+.dev-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Tabs bar */
+.tabs-bar {
+    height: 36px; display: flex; align-items: stretch;
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+    flex-shrink: 0; overflow-x: auto;
+}
+.tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 14px; font-size: .8rem; color: var(--c-text2);
+    font-family: system-ui, sans-serif; cursor: pointer;
+    border-right: 1px solid var(--c-border);
+    border-bottom: 2px solid transparent;
+    transition: color .12s;
+    white-space: nowrap;
+}
+.tab.active { color: var(--c-text); border-bottom-color: var(--c-accent); background: var(--c-bg); }
+.tab-close {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: none; border: none; cursor: pointer;
+    color: var(--c-muted); display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; transition: color .1s;
+}
+.tab-close:hover { color: var(--c-red); }
+
+/* Editor wrapper */
+.editor-wrap { flex: 1; display: flex; overflow: hidden; }
+.line-gutter {
+    width: 50px; flex-shrink: 0; overflow: hidden;
+    background: var(--c-bg); padding: 10px 0;
+    user-select: none; border-right: 1px solid var(--c-border);
+}
+.ln {
+    display: block; text-align: right; padding-right: 10px;
+    font-size: 13.5px; line-height: 1.65;
+    color: var(--c-muted); transition: color .1s;
+    font-family: monospace;
+}
+.ln.cur  { color: var(--c-text2); }
+.ln.err  { color: var(--c-red); }
+.ln.warn { color: var(--c-yellow); }
+.hl-line { display: block; }
+.hl-err-ln  { background: rgba(248,81,73,.09); box-shadow: inset 2px 0 0 rgba(248,81,73,.7); }
+.hl-warn-ln { background: rgba(227,179,65,.07); box-shadow: inset 2px 0 0 rgba(227,179,65,.6); }
+
+.code-inner { flex: 1; position: relative; overflow: hidden; }
+.code-inner textarea,
+.code-inner .hl {
+    position: absolute; inset: 0;
+    margin: 0; padding: 10px 10px 10px 12px;
+    font: 13.5px/1.65 monospace;
+    tab-size: 4; white-space: pre;
+    overflow: auto;
+    box-sizing: border-box;
+    width: 100%; height: 100%;
+}
+.code-inner textarea {
+    color: transparent;
+    caret-color: #58a6ff;
+    background: transparent;
+    border: none; outline: none; resize: none;
+    z-index: 2;
+}
+.code-inner textarea::selection { background: rgba(88,166,255,.25); color: transparent; }
+.code-inner .hl {
+    pointer-events: none; z-index: 1;
+    color: var(--c-text); background: var(--c-bg); overflow: hidden;
+}
+
+/* Token colours */
+.k  { color: #ff7b72; } .kw { color: #ff7b72; font-weight: 600; }
+.ty { color: #79c0ff; } .fn { color: #d2a8ff; }
+.dr { color: #ff7b72; font-weight: 600; }
+.st { color: #a5d6ff; } .nu { color: #79c0ff; }
+.cl { color: #e3b341; } .mc { color: #ffa657; font-weight: 600; }
+.cm { color: #8b949e; font-style: italic; }
+.op { color: #ff7b72; }
+
+/* Console */
+.resizer { height: 4px; background: var(--c-border); cursor: row-resize; flex-shrink: 0; }
+.resizer:hover { background: var(--c-accent); }
+.console-panel { background: var(--c-panel); border-top: 1px solid var(--c-border); display: flex; flex-direction: column; flex-shrink: 0; height: 190px; }
+.console-panel.collapsed { height: 36px !important; overflow: hidden; }
+.console-header { height: 36px; display: flex; align-items: center; padding: 0 10px; gap: 6px; border-bottom: 1px solid var(--c-border); flex-shrink: 0; }
+.c-tab { padding: 0 10px; height: 36px; display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--c-muted2); cursor: pointer; font-family: system-ui, sans-serif; border-bottom: 2px solid transparent; transition: color .12s; }
+.c-tab.active { color: var(--c-text); border-bottom-color: var(--c-accent); }
+.c-badge { padding: 1px 5px; border-radius: 9px; font-size: .68rem; background: rgba(63,185,80,.2); color: var(--c-green); }
+.c-badge.red { background: rgba(248,81,73,.2); color: var(--c-red); }
+.console-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.c-btn { padding: 3px 8px; border-radius: 4px; background: none; border: none; cursor: pointer; font-size: .75rem; color: var(--c-muted2); font-family: system-ui, sans-serif; transition: color .1s; }
+.c-btn:hover { color: var(--c-text); }
+.icon-btn { width: 24px; height: 24px; border-radius: 4px; background: none; border: none; cursor: pointer; color: var(--c-muted2); display: flex; align-items: center; justify-content: center; transition: color .12s; }
+.icon-btn:hover { color: var(--c-text); }
+.console-out { flex: 1; overflow-y: auto; padding: 4px 0; font-family: monospace; font-size: 12px; }
+.c-row { display: flex; align-items: baseline; gap: 8px; padding: 2px 10px; }
+.c-row:hover { background: rgba(255,255,255,.03); }
+.c-num { color: var(--c-muted); font-size: .7rem; min-width: 18px; text-align: right; }
+.ci { color: var(--c-text2); } .co { color: var(--c-green); }
+.ce { color: var(--c-red); } .cw { color: var(--c-yellow); }
+.cp { color: var(--c-purple); }
+
+/* Status bar */
+.dev-status { height: 24px; background: rgba(88,166,255,.08); border-top: 1px solid var(--c-border); display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: .7rem; color: var(--c-muted2); font-family: system-ui, sans-serif; flex-shrink: 0; }
+.dev-status .sr { margin-left: auto; display: flex; gap: 8px; }
+.dev-status .sep { opacity: .4; }
+
+/* Examples dropdown */
+.dd-wrap { position: relative; }
+.dd-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 260px; background: var(--c-surface); border: 1px solid var(--c-border2); border-radius: 10px; z-index: 50; overflow: hidden; display: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.dd-menu.open { display: block; }
+.dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; transition: background .1s; }
+.dd-item:hover { background: rgba(255,255,255,.05); }
+.dd-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+.dd-name { font-size: .82rem; font-weight: 500; color: var(--c-text); font-family: system-ui, sans-serif; }
+.dd-sub  { font-size: .72rem; color: var(--c-muted2); font-family: system-ui, sans-serif; }
+
+/* ═══════════ ── MODALS ── ═══════════ */
+.modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.6); display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+    background: var(--c-surface); border: 1px solid var(--c-border2);
+    border-radius: 14px; padding: 28px 28px 24px;
+    width: 100%; max-width: 400px;
+    font-family: system-ui, sans-serif;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.modal-title { font-size: 1.05rem; font-weight: 700; color: var(--c-text); margin-bottom: 18px; }
+.modal-input {
+    width: 100%; padding: 9px 12px; border-radius: 8px;
+    background: var(--c-bg); border: 1px solid var(--c-border2);
+    color: var(--c-text); font-size: .9rem; outline: none;
+    transition: border-color .15s; margin-bottom: 16px;
+}
+.modal-input:focus { border-color: var(--c-accent); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ═══════════ ── ONBOARDING ── ═══════════ */
+#onboarding {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,.75);
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+}
+#onboarding.open { display: flex; }
+.ob-box {
+    background: var(--c-surface); border: 1px solid var(--c-border2);
+    border-radius: 16px; padding: 36px 32px 28px;
+    width: 100%; max-width: 480px;
+    font-family: system-ui, sans-serif;
+    box-shadow: 0 24px 80px rgba(0,0,0,.6);
+    position: relative;
+}
+.ob-step-dots { display: flex; gap: 6px; margin-bottom: 22px; }
+.ob-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-border2); transition: background .2s, width .2s; }
+.ob-dot.active { background: var(--c-accent); width: 20px; border-radius: 3px; }
+.ob-icon { font-size: 2.4rem; margin-bottom: 14px; }
+.ob-title { font-size: 1.25rem; font-weight: 700; color: var(--c-text); margin-bottom: 10px; }
+.ob-desc  { font-size: .9rem; color: var(--c-text2); line-height: 1.6; margin-bottom: 28px; }
+.ob-code  { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; padding: 12px 14px; font-family: monospace; font-size: .8rem; color: var(--c-text); margin: 12px 0; line-height: 1.6; }
+.ob-footer { display: flex; align-items: center; justify-content: space-between; }
+.ob-skip { background: none; border: none; cursor: pointer; font-size: .8rem; color: var(--c-muted2); transition: color .12s; }
+.ob-skip:hover { color: var(--c-text2); }
+.ob-next { padding: 9px 22px; border-radius: 8px; background: var(--c-accent); color: #fff; font-size: .88rem; font-weight: 600; border: none; cursor: pointer; transition: opacity .12s; }
+.ob-next:hover { opacity: .9; }
+</style>
+
+<!-- ═══════ ROOT ═══════ -->
+<div class="dev-root" id="dev-root">
+
+<!-- ═══════════════════════════════════ -->
+<!-- VIEW: PROJECTS HUB                  -->
+<!-- ═══════════════════════════════════ -->
+<div id="view-projects" style="flex:1;overflow-y:auto;background:var(--c-bg);display:flex;flex-direction:column;">
+    <div class="hub-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <polyline points="3,18 9,12 13,16 21,6" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1>OrbitScript Dev</h1>
+        <div class="hub-header-right">
+            <button class="dbtn dbtn-green" id="btn-new-project">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Новый проект
+            </button>
+        </div>
+    </div>
+    <div class="hub-body">
+        <div class="hub-section-title">Проекты</div>
+        <div class="proj-grid" id="proj-grid">
+            <!-- JS-rendered -->
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- VIEW: IDE                           -->
+<!-- ═══════════════════════════════════ -->
+<div id="view-ide" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+
+    <!-- Topbar -->
+    <div class="dev-topbar">
+        <button class="topbar-back" id="btn-back-projects">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2L3.5 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Проекты
+        </button>
+        <div class="topbar-divider"></div>
+        <span class="topbar-project-name" id="topbar-proj-name">—</span>
+        <div style="margin-left:4px;width:1px;height:14px;background:var(--c-border2)"></div>
+        <button class="dbtn dbtn-green" id="btn-run">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 1.5l6 3.5-6 3.5V1.5z" fill="currentColor"/></svg>
+            Запустить <span style="opacity:.55;font-size:.7rem">Ctrl+↵</span>
+        </button>
+        <button class="dbtn dbtn-blue" id="btn-send">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 9L9 1M9 1H4M9 1v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            На график
+        </button>
+        <div class="topbar-right">
+            <button class="dbtn" id="btn-save">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 9.5h8M5.5 1.5v5.5M3 4.5l2.5 2.5 2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Скачать
+            </button>
+            <label class="dbtn" style="cursor:pointer">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1.5h4l1.5 1.5H9.5v6H1.5V1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                Открыть
+                <input type="file" accept=".os,.txt" id="file-input" style="display:none">
+            </label>
+            <div class="dd-wrap">
+                <button class="dbtn" id="btn-ex">Примеры <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 3l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+                <div class="dd-menu" id="dd-menu">
+                    <div class="dd-item" data-ex="rsi"><div class="dd-icon" style="background:rgba(248,81,73,.12);color:#f85149">📊</div><div class="dd-text"><div class="dd-name">RSI Zones</div><div class="dd-sub">Зоны перекупленности / перепроданности</div></div></div>
+                    <div class="dd-item" data-ex="golden_cross"><div class="dd-icon" style="background:rgba(227,179,65,.12);color:#e3b341">✕</div><div class="dd-text"><div class="dd-name">Golden Cross</div><div class="dd-sub">SMA 50/200 пересечение</div></div></div>
+                    <div class="dd-item" data-ex="bollinger"><div class="dd-icon" style="background:rgba(121,192,255,.12);color:#79c0ff">〜</div><div class="dd-text"><div class="dd-name">Bollinger Bands</div><div class="dd-sub">Полосы Боллинджера</div></div></div>
+                    <div class="dd-item" data-ex="macd"><div class="dd-icon" style="background:rgba(88,166,255,.12);color:#58a6ff">≋</div><div class="dd-text"><div class="dd-name">MACD</div><div class="dd-sub">С гистограммой</div></div></div>
+                    <div class="dd-item" data-ex="supertrend"><div class="dd-icon" style="background:rgba(63,185,80,.12);color:#3fb950">↗</div><div class="dd-text"><div class="dd-name">Supertrend</div><div class="dd-sub">Трендовый индикатор + сигналы</div></div></div>
+                    <div class="dd-item" data-ex="vwap"><div class="dd-icon" style="background:rgba(227,179,65,.12);color:#e3b341">◎</div><div class="dd-text"><div class="dd-name">VWAP + σ</div><div class="dd-sub">VWAP со стандартным отклонением</div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div class="dev-body">
+
+        <!-- File Tree + Insert Panel -->
+        <div class="file-tree" id="file-tree-panel">
+            <div class="tree-tabs">
+                <div class="tree-tab active" id="tab-files" data-pane="pane-files">Файлы</div>
+                <div class="tree-tab" id="tab-insert" data-pane="pane-insert">Вставка</div>
+            </div>
+
+            <!-- Files pane -->
+            <div id="pane-files" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+                <div class="file-tree-header">
+                    <span class="file-tree-title" id="tree-proj-label">ФАЙЛЫ</span>
+                    <button class="file-tree-add" id="btn-add-file" title="Новый файл">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+                <div class="file-tree-list" id="file-list"></div>
+            </div>
+
+            <!-- Insert pane -->
+            <div id="pane-insert" style="display:none;flex:1;overflow:hidden;flex-direction:column;">
+                <div class="sidebar-content">
+                    <div class="s-section">
+                        <div class="s-section-title">Серии</div>
+                        <div class="s-item" data-ins="open">  <span class="s-dot" style="background:#ffa657"></span>open   <span class="s-badge">series</span></div>
+                        <div class="s-item" data-ins="high">  <span class="s-dot" style="background:#3fb950"></span>high</div>
+                        <div class="s-item" data-ins="low">   <span class="s-dot" style="background:#f85149"></span>low</div>
+                        <div class="s-item" data-ins="close"> <span class="s-dot" style="background:#58a6ff"></span>close</div>
+                        <div class="s-item" data-ins="volume"><span class="s-dot" style="background:#bc8cff"></span>volume</div>
+                    </div>
+                    <div class="s-section">
+                        <div class="s-section-title">Скол. средние</div>
+                        <div class="s-item" data-ins="sma(close, 20)">sma()</div>
+                        <div class="s-item" data-ins="ema(close, 20)">ema()</div>
+                        <div class="s-item" data-ins="wma(close, 20)">wma()</div>
+                        <div class="s-item" data-ins="hma(close, 20)">hma()</div>
+                        <div class="s-item" data-ins="vwma(close, volume, 20)">vwma()</div>
+                    </div>
+                    <div class="s-section">
+                        <div class="s-section-title">Осцилляторы</div>
+                        <div class="s-item" data-ins="rsi(close, 14)">rsi()</div>
+                        <div class="s-item" data-ins="macd(close, 12, 26, 9)">macd()</div>
+                        <div class="s-item" data-ins="atr(high, low, close, 14)">atr()</div>
+                        <div class="s-item" data-ins="adx(high, low, close, 14)">adx()</div>
+                        <div class="s-item" data-ins="bollinger(close, 20, 2.0)">bollinger()</div>
+                        <div class="s-item" data-ins="stochastic(high, low, close, 14, 3)">stochastic()</div>
+                        <div class="s-item" data-ins="cci(high, low, close, 20)">cci()</div>
+                    </div>
+                    <div class="s-section">
+                        <div class="s-section-title">Вывод</div>
+                        <div class="s-item" data-ins='plot(close, "Name", #58a6ff, 2)'>plot()</div>
+                        <div class="s-item" data-ins='hline(70, "Level", #f85149, "dashed")'>hline()</div>
+                        <div class="s-item" data-ins='bgcolor(#58a6ff20, close > open)'>bgcolor()</div>
+                        <div class="s-item" data-ins='plotshape(crossover(close,sma(close,20)),"Buy","triangle_up","below",#3fb950,"small")'>plotshape()</div>
+                    </div>
+                    <div class="s-section">
+                        <div class="s-section-title">Кросс / тренд</div>
+                        <div class="s-item" data-ins="crossover(a, b)">crossover()</div>
+                        <div class="s-item" data-ins="crossunder(a, b)">crossunder()</div>
+                        <div class="s-item" data-ins="rising(close, 3)">rising()</div>
+                        <div class="s-item" data-ins="falling(close, 3)">falling()</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor + Console -->
+        <div class="dev-main">
+            <div class="tabs-bar" id="tabs-bar">
+                <!-- JS-rendered -->
+            </div>
+            <div class="editor-wrap">
+                <div class="line-gutter" id="gutter"></div>
+                <div class="code-inner">
+                    <textarea id="editor" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+                    <div class="hl" id="hl" aria-hidden="true"></div>
+                </div>
+            </div>
+            <div class="resizer" id="resizer"></div>
+            <div class="console-panel" id="console">
+                <div class="console-header">
+                    <div class="c-tab active" id="c-tab-out">
+                        Консоль <span class="c-badge" id="cnt">0</span>
+                    </div>
+                    <div class="c-tab" id="c-tab-err">
+                        Ошибки <span class="c-badge red" id="ecnt" style="display:none">0</span><span class="c-badge" id="wcnt" style="display:none;background:rgba(227,179,65,.2);color:#e3b341;margin-left:3px">0</span>
+                    </div>
+                    <div class="console-actions">
+                        <button class="c-btn" id="btn-clear">Очистить</button>
+                        <button class="icon-btn" id="btn-hide-console" title="Скрыть">
+                            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="console-out" id="cout"></div>
+                <div class="console-out" id="err-out" style="display:none;font-family:system-ui,sans-serif;font-size:.78rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="dev-status">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="opacity:.7"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 2.5V5.5l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span id="st-text">OrbitScript Dev  ·  Готов</span>
+        <div class="sr">
+            <span id="st-cur">Ln 1, Col 1</span>
+            <span class="sep">|</span>
+            <span id="st-len">0 симв.</span>
+            <span class="sep">|</span>
+            <span>.os  UTF-8</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /dev-root -->
+
+<!-- ═══════════ MODAL: NEW PROJECT ═══════════ -->
+<div class="modal-overlay" id="modal-new-project">
+    <div class="modal-box">
+        <div class="modal-title">Новый проект</div>
+        <input class="modal-input" id="new-project-name" placeholder="Название проекта" maxlength="40" autocomplete="off">
+        <div class="modal-actions">
+            <button class="dbtn" id="btn-cancel-new">Отмена</button>
+            <button class="dbtn dbtn-green" id="btn-confirm-new">Создать</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ MODAL: NEW FILE ═══════════ -->
+<div class="modal-overlay" id="modal-new-file">
+    <div class="modal-box">
+        <div class="modal-title">Новый файл</div>
+        <input class="modal-input" id="new-file-name" placeholder="имя_файла.os" maxlength="40" autocomplete="off">
+        <div class="modal-actions">
+            <button class="dbtn" id="btn-cancel-file">Отмена</button>
+            <button class="dbtn dbtn-green" id="btn-confirm-file">Создать</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ ONBOARDING ═══════════ -->
+<div id="onboarding">
+    <div class="ob-box">
+        <div class="ob-step-dots" id="ob-dots"></div>
+        <div class="ob-icon" id="ob-icon"></div>
+        <div class="ob-title" id="ob-title"></div>
+        <div class="ob-desc"  id="ob-desc"></div>
+        <div class="ob-footer">
+            <button class="ob-skip" id="ob-skip">Пропустить</button>
+            <button class="ob-next" id="ob-next">Далее →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// EXAMPLES
+// ═══════════════════════════════════════════════════════════
+const EXAMPLES = {
+rsi:`#[indicator(name = "RSI Zones", overlay = false)]
+#[input(length,     "i64", 14)]
+#[input(overbought, "f64", 70)]
+#[input(oversold,   "f64", 30)]
+
+rsiVal = rsi(close, length)
+plot(rsiVal, "RSI", #58a6ff, 2)
+
+hline(overbought, "Перекуплен", #f85149, "dashed")
+hline(oversold,   "Перепродан", #3fb950, "dashed")
+hline(50,         "Средняя",    #484f58, "dotted")
+
+bgcolor(#f8514920, rsiVal > overbought)
+bgcolor(#3fb95020, rsiVal < oversold)
+
+alertcondition(rsiVal > overbought, "OB", format!("RSI = {}", rsiVal))`,
+
+golden_cross:`#[indicator(name = "Golden Cross", overlay = true)]
+#[input(fast, "i64", 50)]
+#[input(slow, "i64", 200)]
+
+fastMA = sma(close, fast)
+slowMA = sma(close, slow)
+
+plot(fastMA, "SMA Fast", #58a6ff, 2)
+plot(slowMA, "SMA Slow", #f85149, 2)
+
+alertcondition(crossover(fastMA, slowMA),  "Golden Cross", "Пересечение вверх")
+alertcondition(crossunder(fastMA, slowMA), "Death Cross",  "Пересечение вниз")`,
+
+bollinger:`#[indicator(name = "Bollinger Bands", overlay = true)]
+#[input(length, "i64", 20)]
+#[input(mult,   "f64", 2.0)]
+
+bb    = bollinger(close, length, mult)
+upper = bb.upper
+mid   = bb.basis
+lower = bb.lower
+
+plot(upper, "Upper", #79c0ff, 1)
+plot(mid,   "Mid",   #484f58, 1)
+plot(lower, "Lower", #79c0ff, 1)
+
+bgcolor(#79c0ff0d, close > upper)
+bgcolor(#f851490d, close < lower)`,
+
+macd:`#[indicator(name = "MACD", overlay = false)]
+#[input(fast,   "i64", 12)]
+#[input(slow,   "i64", 26)]
+#[input(signal, "i64", 9)]
+
+result     = macd(close, fast, slow, signal)
+macdLine   = result.macd_line
+signalLine = result.signal_line
+histogram  = result.histogram
+
+plot(macdLine,   "MACD",   #58a6ff, 2)
+plot(signalLine, "Signal", #f85149, 1)
+hline(0, "Zero", #21262d, "solid")
+
+bgcolor(#3fb95015, histogram > 0)
+bgcolor(#f8514915, histogram < 0)`,
+
+supertrend:`#[indicator(name = "Supertrend", overlay = true)]
+#[input(atr_len, "i64", 10)]
+#[input(factor,  "f64", 3.0)]
+
+atrVal = atr(high, low, close, atr_len)
+hl2    = (high + low) / 2
+
+upperBand = hl2 + factor * atrVal
+lowerBand = hl2 - factor * atrVal
+
+let mut trend  = 1
+let mut st     = lowerBand
+
+if close > st
+    trend = 1
+    st    = lowerBand
+else
+    trend = -1
+    st    = upperBand
+end
+
+if trend == 1
+    plot(st, "Supertrend", #3fb950, 2)
+else
+    plot(st, "Supertrend", #f85149, 2)
+end
+
+plotshape(crossover(close, st),  "Buy",  "triangle_up",   "below", #3fb950, "normal")
+plotshape(crossunder(close, st), "Sell", "triangle_down", "above", #f85149, "normal")`,
+
+vwap:`#[indicator(name = "VWAP + StDev", overlay = true)]
+#[input(mult, "f64", 2.0)]
+
+vwapVal = vwap(close, volume)
+dev     = stdev(close, 20)
+
+upper = vwapVal + mult * dev
+lower = vwapVal - mult * dev
+
+plot(vwapVal, "VWAP",     #e3b341, 2)
+plot(upper,   "VWAP +2σ", #58a6ff, 1)
+plot(lower,   "VWAP -2σ", #58a6ff, 1)
+
+bgcolor(#e3b3410d, close > vwapVal)`,
+};
+
+const DEFAULT_FILE = `#[indicator(name = "My Indicator", overlay = true)]
+
+// Напиши свой индикатор здесь
+plot(close, "Close", #58a6ff, 2)
+`;
+
+// ═══════════════════════════════════════════════════════════
+// PROJECTS STORAGE
+// ═══════════════════════════════════════════════════════════
+function loadProjects() {
+    try { return JSON.parse(localStorage.getItem('orbityx_projects') || '[]'); }
+    catch { return []; }
+}
+function saveProjects(list) {
+    localStorage.setItem('orbityx_projects', JSON.stringify(list));
+}
+function getActiveProjectId() { return localStorage.getItem('orbityx_active_project'); }
+function setActiveProjectId(id) { localStorage.setItem('orbityx_active_project', id || ''); }
+function getProject(id) { return loadProjects().find(p => p.id === id); }
+function saveProject(proj) {
+    const list = loadProjects();
+    const idx = list.findIndex(p => p.id === proj.id);
+    if (idx >= 0) list[idx] = proj; else list.push(proj);
+    saveProjects(list);
+}
+function deleteProject(id) {
+    saveProjects(loadProjects().filter(p => p.id !== id));
+    if (getActiveProjectId() === id) setActiveProjectId(null);
+}
+function createProject(name) {
+    const proj = {
+        id: 'proj_' + Date.now(),
+        name: name.trim() || 'Новый проект',
+        files: [{ name: 'indicator.os', content: DEFAULT_FILE }],
+        activeFile: 'indicator.os',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    };
+    saveProject(proj);
+    return proj;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════════
+function showProjects() {
+    document.getElementById('view-projects').style.display = 'flex';
+    document.getElementById('view-ide').style.display = 'none';
+    renderProjGrid();
+}
+
+function showIDE(projId) {
+    const proj = getProject(projId);
+    if (!proj) { showProjects(); return; }
+    setActiveProjectId(projId);
+    document.getElementById('view-projects').style.display = 'none';
+    document.getElementById('view-ide').style.display = 'flex';
+    document.getElementById('topbar-proj-name').textContent = proj.name;
+    document.getElementById('tree-proj-label').textContent = proj.name.toUpperCase().slice(0, 12);
+    renderFileTree(proj);
+    openFile(proj, proj.activeFile || proj.files[0]?.name);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT GRID
+// ═══════════════════════════════════════════════════════════
+function renderProjGrid() {
+    const projects = loadProjects();
+    const grid = document.getElementById('proj-grid');
+    if (!projects.length) {
+        grid.innerHTML = `<div class="proj-empty" style="grid-column:1/-1">
+            <div class="proj-empty-icon">📁</div>
+            <h3>Нет проектов</h3>
+            <p>Создай первый проект чтобы начать писать индикаторы</p>
+            <button class="dbtn dbtn-green" onclick="openNewProjectModal()" style="margin:0 auto">
+                + Новый проект
+            </button>
+        </div>`;
+        return;
+    }
+    grid.innerHTML = projects.map(p => {
+        const date = new Date(p.updatedAt).toLocaleDateString('ru', { day:'numeric', month:'short' });
+        return `<div class="proj-card" onclick="showIDE('${p.id}')">
+            <div class="proj-card-icon">📁</div>
+            <div class="proj-card-name">${esc(p.name)}</div>
+            <div class="proj-card-meta">${p.files.length} файл${p.files.length===1?'':'ов'} · ${date}</div>
+            <button class="proj-card-del" onclick="event.stopPropagation();confirmDeleteProject('${p.id}')" title="Удалить">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M2 2l8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function confirmDeleteProject(id) {
+    const proj = getProject(id);
+    if (!proj) return;
+    if (confirm(`Удалить проект «${proj.name}»?`)) {
+        deleteProject(id);
+        renderProjGrid();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILE TREE
+// ═══════════════════════════════════════════════════════════
+function renderFileTree(proj) {
+    const list = document.getElementById('file-list');
+    list.innerHTML = proj.files.map(f => `
+        <div class="file-item${f.name === proj.activeFile ? ' active' : ''}"
+             onclick="openFile(getProject(getActiveProjectId()), '${esc(f.name)}')"
+             title="${esc(f.name)}">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="flex-shrink:0"><path d="M1.5 1.5h5l2 2V9.5H1.5V1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
+            <button class="file-item-del" onclick="event.stopPropagation();deleteFile('${esc(f.name)}')" title="Удалить">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M2 2l6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+        </div>`).join('');
+}
+
+function openFile(proj, fileName) {
+    if (!proj || !fileName) return;
+    const file = proj.files.find(f => f.name === fileName);
+    if (!file) return;
+    proj.activeFile = fileName;
+    saveProject(proj);
+    ed.value = file.content;
+    errLines.clear(); warnLines.clear(); lintDiags = []; setErr(0); setWarn(0);
+    render(); lintCode();
+    renderFileTree(proj);
+    renderTabs(proj);
+}
+
+function renderTabs(proj) {
+    const bar = document.getElementById('tabs-bar');
+    bar.innerHTML = proj.files.map(f => `
+        <div class="tab${f.name === proj.activeFile ? ' active' : ''}"
+             onclick="openFile(getProject(getActiveProjectId()), '${esc(f.name)}')">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1.5h4.5l2 2V9H1V1.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+            ${esc(f.name)}
+        </div>`).join('');
+}
+
+function deleteFile(fileName) {
+    const proj = getProject(getActiveProjectId());
+    if (!proj) return;
+    if (proj.files.length <= 1) { alert('Нельзя удалить последний файл'); return; }
+    if (!confirm(`Удалить файл «${fileName}»?`)) return;
+    proj.files = proj.files.filter(f => f.name !== fileName);
+    if (proj.activeFile === fileName) proj.activeFile = proj.files[0].name;
+    proj.updatedAt = Date.now();
+    saveProject(proj);
+    openFile(proj, proj.activeFile);
+}
+
+// ═══════════════════════════════════════════════════════════
+// NEW PROJECT MODAL
+// ═══════════════════════════════════════════════════════════
+function openNewProjectModal() {
+    document.getElementById('new-project-name').value = '';
+    document.getElementById('modal-new-project').classList.add('open');
+    setTimeout(() => document.getElementById('new-project-name').focus(), 50);
+}
+document.getElementById('btn-new-project').addEventListener('click', openNewProjectModal);
+document.getElementById('btn-cancel-new').addEventListener('click', () => {
+    document.getElementById('modal-new-project').classList.remove('open');
+});
+document.getElementById('btn-confirm-new').addEventListener('click', () => {
+    const name = document.getElementById('new-project-name').value.trim();
+    if (!name) return;
+    const proj = createProject(name);
+    document.getElementById('modal-new-project').classList.remove('open');
+    showIDE(proj.id);
+});
+document.getElementById('new-project-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-confirm-new').click();
+    if (e.key === 'Escape') document.getElementById('btn-cancel-new').click();
+});
+
+// ═══════════════════════════════════════════════════════════
+// NEW FILE MODAL
+// ═══════════════════════════════════════════════════════════
+document.getElementById('btn-add-file').addEventListener('click', () => {
+    document.getElementById('new-file-name').value = '';
+    document.getElementById('modal-new-file').classList.add('open');
+    setTimeout(() => document.getElementById('new-file-name').focus(), 50);
+});
+document.getElementById('btn-cancel-file').addEventListener('click', () => {
+    document.getElementById('modal-new-file').classList.remove('open');
+});
+document.getElementById('btn-confirm-file').addEventListener('click', () => {
+    let name = document.getElementById('new-file-name').value.trim();
+    if (!name) return;
+    if (!name.endsWith('.os')) name += '.os';
+    const proj = getProject(getActiveProjectId());
+    if (!proj) return;
+    if (proj.files.find(f => f.name === name)) { alert('Файл уже существует'); return; }
+    proj.files.push({ name, content: DEFAULT_FILE });
+    proj.updatedAt = Date.now();
+    saveProject(proj);
+    document.getElementById('modal-new-file').classList.remove('open');
+    openFile(proj, name);
+});
+document.getElementById('new-file-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-confirm-file').click();
+    if (e.key === 'Escape') document.getElementById('btn-cancel-file').click();
+});
+
+// ═══════════════════════════════════════════════════════════
+// BACK TO PROJECTS
+// ═══════════════════════════════════════════════════════════
+document.getElementById('btn-back-projects').addEventListener('click', () => {
+    // Save current content
+    const proj = getProject(getActiveProjectId());
+    if (proj) {
+        const file = proj.files.find(f => f.name === proj.activeFile);
+        if (file) { file.content = ed.value; proj.updatedAt = Date.now(); saveProject(proj); }
+    }
+    showProjects();
+});
+
+// ═══════════════════════════════════════════════════════════
+// TREE TABS (Files / Insert)
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.tree-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tree-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('pane-files').style.display = tab.dataset.pane === 'pane-files' ? 'flex' : 'none';
+        document.getElementById('pane-insert').style.display = tab.dataset.pane === 'pane-insert' ? 'flex' : 'none';
+    });
+});
+
+// ═══════════════════════════════════════════════════════════
+// SYNTAX HIGHLIGHTER
+// ═══════════════════════════════════════════════════════════
+const KW = new Set(['fn','let','mut','struct','enum','impl','trait','for','in','while',
+    'loop','if','else','match','case','end','return','break','continue','self',
+    'pub','true','false','Some','None','Ok','Err']);
+const TY = new Set(['f64','i64','bool','str','color','series','number','string','Option','Result','void']);
+const FN = new Set(['sma','ema','wma','dema','tema','hma','vwma','rsi','macd','stochastic',
+    'stochastic_rsi','williams_r','cci','mfi','roc','momentum','awesome_oscillator',
+    'atr','adx','bollinger','keltner','donchian','parabolic_sar','ichimoku',
+    'obv','vwap','ad_line','cmf','stdev','highest','lowest','sum','avg','change',
+    'crossover','crossunder','rising','falling','plot','hline','bgcolor',
+    'alertcondition','plotshape','plotarrow','plothistogram','na','nz',
+    'abs','sqrt','log','log10','round','ceil','floor','pow','max','min','clamp',
+    'open','high','low','close','volume','bar_index','time']);
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+const PATS = [
+    [/^\/\/[^\n]*/,          m => `<span class="cm">${esc(m)}</span>`],
+    [/^#\[[a-zA-Z_]\w*(?:\([^)]*\))?\]/,  m => `<span class="dr">${esc(m)}</span>`],
+    [/^"(?:[^"\\]|\\.)*"/,   m => `<span class="st">${esc(m)}</span>`],
+    [/^#[0-9a-fA-F]{6,8}(?!\w)/, m => `<span class="cl" style="border-bottom:2px solid ${m.slice(0,7)}">${esc(m)}</span>`],
+    [/^\d+\.?\d*/,            m => `<span class="nu">${esc(m)}</span>`],
+    [/^([a-zA-Z_]\w*)!/,      m => `<span class="mc">${esc(m)}</span>`],
+    [/^[a-zA-Z_]\w*/,         m => {
+        if (KW.has(m)) return `<span class="kw">${esc(m)}</span>`;
+        if (TY.has(m)) return `<span class="ty">${esc(m)}</span>`;
+        if (FN.has(m)) return `<span class="fn">${esc(m)}</span>`;
+        return esc(m);
+    }],
+    [/^[=+\-*/%<>!&|^~.,;:()\[\]{}]/, m => `<span class="op">${esc(m)}</span>`],
+    [/^[^\S\n]+/, m => m],
+    [/^\n/,       () => '\n'],
+    [/^./,        m => esc(m)],
+];
+
+function highlightLine(src) {
+    let i = 0, out = '';
+    while (i < src.length) {
+        let matched = false;
+        for (const [re, fn] of PATS) {
+            const m = re.exec(src.slice(i));
+            if (m && m[0] !== '\n') { out += fn(m[0]); i += m[0].length; matched = true; break; }
+        }
+        if (!matched) { out += esc(src[i]); i++; }
+    }
+    return out;
+}
+function highlight(code) {
+    return code.split('\n').map((ln, i) => {
+        const n = i + 1;
+        const cls = errLines.has(n) ? ' hl-err-ln' : warnLines.has(n) ? ' hl-warn-ln' : '';
+        return `<span class="hl-line${cls}">${highlightLine(ln)}</span>`;
+    }).join('\n') + '\n';
+}
+
+// ═══════════════════════════════════════════════════════════
+// LINTER  — compile-time checks, runs debounced on every input
+// ═══════════════════════════════════════════════════════════
+function lint(src) {
+    const diags = [];
+    const lines = src.split('\n');
+
+    // 1. Unclosed string literals (per line, respecting // comments)
+    for (let i = 0; i < lines.length; i++) {
+        const ln = lines[i];
+        let inStr = false, strCol = 0;
+        for (let j = 0; j < ln.length; j++) {
+            if (!inStr && ln[j] === '/' && ln[j+1] === '/') break;
+            if (ln[j] === '\\' && inStr) { j++; continue; }
+            if (ln[j] === '"') { inStr ? inStr = false : (inStr = true, strCol = j + 1); }
+        }
+        if (inStr) diags.push({ line: i+1, col: strCol, msg: 'Незакрытая строка', sev: 'error' });
+    }
+
+    // 2. Bracket/paren balance — report at opening bracket line
+    const stack = [];
+    const rPairs = { ')': '(', ']': '[', '}': '{' };
+    const opens  = new Set(['(','[','{']);
+    let ln2 = 1, inStr2 = false, inCom2 = false;
+    for (let i = 0; i < src.length; i++) {
+        const c = src[i];
+        if (c === '\n') { ln2++; inCom2 = false; continue; }
+        if (inCom2) continue;
+        if (!inStr2 && c === '/' && src[i+1] === '/') { inCom2 = true; continue; }
+        if (c === '\\' && inStr2) { i++; continue; }
+        if (c === '"') { inStr2 = !inStr2; continue; }
+        if (inStr2) continue;
+        if (opens.has(c)) { stack.push({ c, line: ln2 }); continue; }
+        if (rPairs[c]) {
+            if (stack.length && stack[stack.length-1].c === rPairs[c]) { stack.pop(); }
+            else { diags.push({ line: ln2, col: 1, msg: `Лишняя скобка '${c}'`, sev: 'error' }); }
+        }
+    }
+    for (const { c, line } of stack) {
+        diags.push({ line, col: 1, msg: `Незакрытая скобка '${c}'`, sev: 'error' });
+    }
+
+    // 3. Block balance: if / for / while / loop / fn … end
+    const BLOCK_OPEN = /^(if|for|while|loop|fn)\b/;
+    const blockStack = [];
+    for (let i = 0; i < lines.length; i++) {
+        // strip comments and strings for keyword detection
+        const raw = lines[i].replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/\/\/.*/, '').trim();
+        const words = raw.match(/[a-zA-Z_]\w*/g) || [];
+        for (const w of words) {
+            if (BLOCK_OPEN.test(w)) { blockStack.push({ w, line: i+1 }); }
+            else if (w === 'end') {
+                if (blockStack.length) { blockStack.pop(); }
+                else { diags.push({ line: i+1, col: 1, msg: `'end' без открывающего блока`, sev: 'error' }); }
+            }
+        }
+    }
+    for (const { w, line } of blockStack) {
+        diags.push({ line, col: 1, msg: `Блок '${w}' не закрыт — ожидается 'end'`, sev: 'error' });
+    }
+
+    // 4. Indicator directive checks
+    const indicatorMatches = [...src.matchAll(/#\[indicator\s*\(/g)];
+    if (src.trim() && indicatorMatches.length === 0) {
+        diags.push({ line: 1, col: 1, msg: 'Отсутствует директива #[indicator(name = "...", overlay = ...)]', sev: 'warning' });
+    } else if (indicatorMatches.length > 1) {
+        diags.push({ line: 1, col: 1, msg: `Директива #[indicator] объявлена ${indicatorMatches.length} раза — должна быть одна`, sev: 'warning' });
+    }
+
+    // 5. #[input] syntax — must have 3 args: name, type, default
+    for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].match(/^#\[input\(([^)]*)\)\]/);
+        if (m) {
+            const parts = m[1].split(',').map(s => s.trim());
+            if (parts.length !== 3) {
+                diags.push({ line: i+1, col: 1, msg: `#[input] ожидает 3 аргумента: name, "type", default — найдено ${parts.length}`, sev: 'error' });
+            }
+        }
+    }
+
+    // 6. plot() argument count — must have exactly 4 args
+    for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i].replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/\/\/.*/, '');
+        const m = raw.match(/\bplot\s*\(([^)]*)\)/);
+        if (m) {
+            const argc = m[1].split(',').filter(s => s.trim()).length;
+            if (argc !== 4) {
+                diags.push({ line: i+1, col: raw.indexOf('plot')+1, msg: `plot() ожидает 4 аргумента (series, "name", #color, width) — найдено ${argc}`, sev: 'warning' });
+            }
+        }
+    }
+
+    // 7. Unused variable hint (declared with 'let' but never read)
+    const declaredLet = new Map(); // name → line
+    for (let i = 0; i < lines.length; i++) {
+        const m = lines[i].replace(/\/\/.*/, '').match(/^\s*let\s+(?:mut\s+)?([a-zA-Z_]\w*)\s*=/);
+        if (m) declaredLet.set(m[1], i+1);
+    }
+    for (const [name, line] of declaredLet) {
+        // count occurrences outside declaration line
+        let uses = 0;
+        for (let i = 0; i < lines.length; i++) {
+            if (i === line - 1) continue;
+            const reg = new RegExp(`\\b${name}\\b`);
+            if (reg.test(lines[i].replace(/\/\/.*/, ''))) uses++;
+        }
+        if (uses === 0) {
+            diags.push({ line, col: 1, msg: `Переменная '${name}' объявлена, но не используется`, sev: 'warning' });
+        }
+    }
+
+    // sort by line
+    diags.sort((a, b) => a.line - b.line || a.sev.localeCompare(b.sev));
+    return diags;
+}
+
+let _lintTimer = null;
+function lintCode() {
+    clearTimeout(_lintTimer);
+    _lintTimer = setTimeout(() => {
+        const src = ed.value;
+        const diags = src.trim() ? lint(src) : [];
+        lintDiags = diags;
+
+        errLines.clear(); warnLines.clear();
+        for (const d of diags) {
+            const map = d.sev === 'error' ? errLines : warnLines;
+            if (!map.has(d.line)) map.set(d.line, []);
+            map.get(d.line).push(d.msg);
+        }
+
+        const eCount = diags.filter(d => d.sev === 'error').length;
+        const wCount = diags.filter(d => d.sev === 'warning').length;
+        setErr(eCount); setWarn(wCount);
+
+        if (_errTab) renderErrOut();
+
+        // Update status bar
+        if (eCount) setStatus(`✕  ${eCount} ошибок`, 'err');
+        else if (wCount) setStatus(`⚠  ${wCount} предупреждений`);
+        else if (src.trim()) setStatus('✓  Синтаксис OK', 'ok');
+        else setStatus('OrbitScript Dev  ·  Готов');
+
+        render(); // re-render with updated errLines/warnLines
+    }, 400);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDITOR STATE
+// ═══════════════════════════════════════════════════════════
+const ed      = document.getElementById('editor');
+const hlEl    = document.getElementById('hl');
+const gutterEl= document.getElementById('gutter');
+let errLines  = new Map();   // line → string[]
+let warnLines = new Map();   // line → string[]
+let lintDiags = [];          // all current diagnostics
+let rowCount  = 0;
+let errCount  = 0;
+
+function render() {
+    const val = ed.value;
+    hlEl.innerHTML = highlight(val);
+    const lines = val.split('\n');
+    const curLn = val.slice(0, ed.selectionStart).split('\n').length;
+    gutterEl.innerHTML = lines.map((_, i) => {
+        const n = i + 1;
+        const hasErr = errLines.has(n), hasWarn = warnLines.has(n);
+        const msgs = hasErr ? errLines.get(n) : hasWarn ? warnLines.get(n) : [];
+        const tip = msgs.length ? ` title="${esc(msgs.join('\n'))}"` : '';
+        const cls = `ln${n===curLn?' cur':''}${hasErr?' err':''}${hasWarn&&!hasErr?' warn':''}`;
+        return `<span class="${cls}"${tip}>${hasErr?'●':hasWarn?'◆':n}</span>`;
+    }).join('');
+    document.getElementById('st-len').textContent = `${val.length} симв.`;
+
+    // Auto-save to project file
+    const proj = getProject(getActiveProjectId());
+    if (proj) {
+        const file = proj.files.find(f => f.name === proj.activeFile);
+        if (file) { file.content = val; proj.updatedAt = Date.now(); saveProject(proj); }
+    }
+    syncScroll();
+}
+
+function syncScroll() {
+    hlEl.scrollTop    = ed.scrollTop;
+    hlEl.scrollLeft   = ed.scrollLeft;
+    gutterEl.scrollTop = ed.scrollTop;
+}
+
+function updateCursor() {
+    const v  = ed.value.slice(0, ed.selectionStart);
+    const ln = v.split('\n').length;
+    const col = v.split('\n').pop().length + 1;
+    document.getElementById('st-cur').textContent = `Ln ${ln}, Col ${col}`;
+    render();
+}
+
+ed.addEventListener('input',  () => { render(); lintCode(); });
+ed.addEventListener('scroll', syncScroll);
+ed.addEventListener('keyup',  updateCursor);
+ed.addEventListener('click',  updateCursor);
+
+ed.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = ed.selectionStart, en = ed.selectionEnd;
+        ed.value = ed.value.slice(0,s) + '    ' + ed.value.slice(en);
+        ed.selectionStart = ed.selectionEnd = s + 4;
+        render();
+    }
+    if (e.key === 'Enter') {
+        const s = ed.selectionStart;
+        const lstart = ed.value.lastIndexOf('\n', s-1) + 1;
+        const indent = ed.value.slice(lstart, s).match(/^(\s*)/)[1];
+        e.preventDefault();
+        ed.value = ed.value.slice(0,s) + '\n' + indent + ed.value.slice(s);
+        ed.selectionStart = ed.selectionEnd = s + 1 + indent.length;
+        render();
+    }
+    if ((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); runScript(); }
+    if ((e.ctrlKey||e.metaKey) && e.key==='s')     { e.preventDefault(); saveFile(); }
+});
+
+// ═══════════════════════════════════════════════════════════
+// CONSOLE
+// ═══════════════════════════════════════════════════════════
+const coutEl = document.getElementById('cout');
+
+function log(msg, cls='ci') {
+    rowCount++;
+    document.getElementById('cnt').textContent = rowCount;
+    const row = document.createElement('div');
+    row.className = 'c-row';
+    row.innerHTML = `<span class="c-num">${rowCount}</span><span class="c-msg ${cls}">${esc(String(msg))}</span>`;
+    coutEl.appendChild(row);
+    coutEl.scrollTop = coutEl.scrollHeight;
+}
+function setErr(n) {
+    errCount = n;
+    const el = document.getElementById('ecnt');
+    el.textContent = n; el.style.display = n ? '' : 'none';
+}
+function setWarn(n) {
+    const el = document.getElementById('wcnt');
+    el.textContent = n; el.style.display = n ? '' : 'none';
+}
+let _errTab = false;
+document.getElementById('c-tab-out').addEventListener('click', () => {
+    _errTab = false;
+    document.getElementById('c-tab-out').classList.add('active');
+    document.getElementById('c-tab-err').classList.remove('active');
+    document.getElementById('cout').style.display = '';
+    document.getElementById('err-out').style.display = 'none';
+});
+document.getElementById('c-tab-err').addEventListener('click', () => {
+    _errTab = true;
+    document.getElementById('c-tab-err').classList.add('active');
+    document.getElementById('c-tab-out').classList.remove('active');
+    document.getElementById('cout').style.display = 'none';
+    document.getElementById('err-out').style.display = '';
+    renderErrOut();
+});
+function renderErrOut() {
+    const el = document.getElementById('err-out');
+    if (!lintDiags.length) {
+        el.innerHTML = '<div style="padding:18px 12px;color:var(--c-muted2);text-align:center">Ошибок не найдено ✓</div>';
+        return;
+    }
+    el.innerHTML = lintDiags.map(d => {
+        const icon = d.sev === 'error' ? `<span style="color:var(--c-red)">✕</span>` : `<span style="color:var(--c-yellow)">⚠</span>`;
+        const loc  = `<span style="color:var(--c-muted2);font-size:.72rem;margin-left:auto;white-space:nowrap">Ln ${d.line}:${d.col}</span>`;
+        return `<div style="display:flex;align-items:baseline;gap:7px;padding:5px 10px;cursor:pointer;border-bottom:1px solid var(--c-border)" onclick="jumpToLine(${d.line})">${icon}<span style="color:var(--c-text)">${esc(d.msg)}</span>${loc}</div>`;
+    }).join('');
+}
+function jumpToLine(n) {
+    const lines = ed.value.split('\n');
+    let pos = 0;
+    for (let i = 0; i < n - 1 && i < lines.length; i++) pos += lines[i].length + 1;
+    ed.focus();
+    ed.selectionStart = ed.selectionEnd = pos;
+    const lh = parseFloat(getComputedStyle(ed).lineHeight);
+    ed.scrollTop = Math.max(0, (n - 4) * lh);
+    updateCursor();
+}
+function setStatus(msg, type='') {
+    const el = document.getElementById('st-text');
+    el.textContent = msg;
+    el.style.color = type === 'ok' ? 'var(--c-green)' : type === 'err' ? 'var(--c-red)' : '';
+}
+document.getElementById('btn-clear').addEventListener('click', () => {
+    coutEl.innerHTML = ''; rowCount = 0;
+    document.getElementById('cnt').textContent = '0';
+});
+
+// ═══════════════════════════════════════════════════════════
+// RUN
+// ═══════════════════════════════════════════════════════════
+async function runScript() {
+    const src = ed.value.trim();
+    if (!src) { log('Скрипт пустой', 'cw'); return; }
+    errLines.clear(); warnLines.clear(); lintDiags = []; setErr(0); setWarn(0);
+    log('▶ Компиляция...', 'ci');
+    setStatus('Компиляция...');
+    let compile;
+    try {
+        const mod = await import('/static/js/orbityx-charts/orbitscript/compiler/index.js');
+        compile = mod.compile;
+    } catch(e) {
+        log('✕ Не удалось загрузить компилятор: ' + e.message, 'ce');
+        log('  Попробуйте Ctrl+Shift+R', 'cw');
+        setStatus('✕ Ошибка загрузки', 'err'); return;
+    }
+    try {
+        const compiled = compile(src);
+        const meta = compiled.meta;
+        const name = meta?.name ?? 'Без названия';
+        log(`✓  "${name}" — скомпилировано`, 'co');
+        if (meta?.inputs?.length) meta.inputs.forEach(i => log(`   #[input(${i.name}, "${i.type}", ${i.default})]`, 'cp'));
+        if (meta?.overlay !== undefined) log(`   overlay = ${meta.overlay}`, 'cp');
+        setStatus(`✓  ${name}`, 'ok');
+    } catch(e) {
+        const msg = e?.message ?? String(e);
+        const line = e?.line; const col = e?.column;
+        log(`✕  ${msg}${line ? `  [строка ${line}:${col??0}]` : ''}`, 'ce');
+        if (line) { if (!errLines.has(line)) errLines.set(line, []); errLines.get(line).push(msg); }
+        setErr(errLines.size);
+        setStatus('✕ Ошибка компиляции', 'err');
+        render();
+    }
+}
+document.getElementById('btn-run').addEventListener('click', runScript);
+
+// ═══════════════════════════════════════════════════════════
+// SEND TO CHART
+// ═══════════════════════════════════════════════════════════
+document.getElementById('btn-send').addEventListener('click', () => {
+    const src = ed.value.trim();
+    if (!src) { log('Сначала напишите скрипт', 'cw'); return; }
+    localStorage.setItem('orbitscript_dev_src', src);
+    localStorage.setItem('orbitscript_dev_pending', '1');
+    log('↗ Открываю график...', 'co');
+    window.open('/chart', '_blank');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SAVE / LOAD FILE
+// ═══════════════════════════════════════════════════════════
+function saveFile() {
+    const proj = getProject(getActiveProjectId());
+    const name = (proj?.activeFile || 'indicator') + '';
+    const n = name.endsWith('.os') ? name : name + '.os';
+    const blob = new Blob([ed.value], {type:'text/plain'});
+    const url  = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), {href:url, download:n}).click();
+    URL.revokeObjectURL(url);
+    log(`↓ Скачан: ${n}`, 'co');
+}
+document.getElementById('btn-save').addEventListener('click', saveFile);
+document.getElementById('file-input').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+        ed.value = ev.target.result;
+        errLines.clear(); warnLines.clear(); lintDiags = []; setErr(0); setWarn(0); render();
+        log(`↑ Открыт: ${f.name}`, 'co');
+        // Save as file in current project
+        const proj = getProject(getActiveProjectId());
+        if (proj) {
+            let name = f.name;
+            if (!name.endsWith('.os')) name += '.os';
+            const exists = proj.files.find(fl => fl.name === name);
+            if (exists) { exists.content = ev.target.result; }
+            else proj.files.push({ name, content: ev.target.result });
+            proj.activeFile = name; proj.updatedAt = Date.now();
+            saveProject(proj);
+            renderFileTree(proj); renderTabs(proj);
+        }
+    };
+    r.readAsText(f);
+    e.target.value = '';
+};
+
+// ═══════════════════════════════════════════════════════════
+// EXAMPLES DROPDOWN
+// ═══════════════════════════════════════════════════════════
+const ddMenu = document.getElementById('dd-menu');
+document.getElementById('btn-ex').addEventListener('click', e => { e.stopPropagation(); ddMenu.classList.toggle('open'); });
+document.addEventListener('click', () => ddMenu.classList.remove('open'));
+document.querySelectorAll('.dd-item[data-ex]').forEach(el => {
+    el.addEventListener('click', () => {
+        const src = EXAMPLES[el.dataset.ex]; if (!src) return;
+        ed.value = src;
+        errLines.clear(); warnLines.clear(); lintDiags = []; setErr(0); setWarn(0); render();
+        log(`📂 Загружен пример: ${el.querySelector('.dd-name').textContent}`, 'ci');
+        ddMenu.classList.remove('open');
+        // Save to current file
+        const proj = getProject(getActiveProjectId());
+        if (proj) {
+            const file = proj.files.find(f => f.name === proj.activeFile);
+            if (file) { file.content = src; proj.updatedAt = Date.now(); saveProject(proj); }
+        }
+    });
+});
+
+// ═══════════════════════════════════════════════════════════
+// INSERT SIDEBAR
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('[data-ins]').forEach(el => {
+    el.addEventListener('click', () => {
+        const ins = el.dataset.ins;
+        const s = ed.selectionStart;
+        ed.value = ed.value.slice(0,s) + ins + ed.value.slice(s);
+        ed.selectionStart = ed.selectionEnd = s + ins.length;
+        ed.focus(); render();
+    });
+});
+
+// ═══════════════════════════════════════════════════════════
+// CONSOLE COLLAPSE + RESIZE
+// ═══════════════════════════════════════════════════════════
+const consoleEl = document.getElementById('console');
+const resizerEl = document.getElementById('resizer');
+let consoleVisible = true, consoleH = 190;
+document.getElementById('btn-hide-console').addEventListener('click', () => {
+    consoleVisible = !consoleVisible;
+    if (!consoleVisible) {
+        consoleH = consoleEl.offsetHeight;
+        consoleEl.classList.add('collapsed');
+        resizerEl.style.display = 'none';
+    } else {
+        consoleEl.classList.remove('collapsed');
+        consoleEl.style.height = consoleH + 'px';
+        resizerEl.style.display = '';
+    }
+    document.querySelector('#btn-hide-console svg').style.transform = consoleVisible ? '' : 'rotate(180deg)';
+});
+let dragging = false, startY = 0, startH = 0;
+resizerEl.addEventListener('mousedown', e => {
+    dragging = true; startY = e.clientY; startH = consoleEl.offsetHeight;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'row-resize';
+});
+document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const h = Math.min(500, Math.max(60, startH + (startY - e.clientY)));
+    consoleEl.style.height = h + 'px'; consoleH = h;
+});
+document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; document.body.style.userSelect = document.body.style.cursor = ''; }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════════════════
+const OB_STEPS = [
+    {
+        icon: '👋',
+        title: 'Добро пожаловать в OrbitScript Dev',
+        desc: 'Это среда разработки для написания пользовательских индикаторов на языке <b>OrbitScript</b> — специально созданном для Orbityx Charts.',
+    },
+    {
+        icon: '📁',
+        title: 'Проекты',
+        desc: 'Организуй скрипты по проектам. Каждый проект — отдельная директория с файлами <code style="color:#58a6ff;background:rgba(88,166,255,.1);padding:1px 5px;border-radius:3px">.os</code>. Проекты сохраняются в браузере.',
+    },
+    {
+        icon: '🌿',
+        title: 'Дерево файлов',
+        desc: 'Слева — панель файлов. Создавай новые файлы кнопкой <b>+</b>, переключайся между ними кликом. Вкладка <b>Вставка</b> содержит готовые функции для быстрой вставки.',
+    },
+    {
+        icon: '✏️',
+        title: 'Редактор кода',
+        desc: 'Пиши индикаторы на OrbitScript — синтаксис похож на Rust. Начни с директив:<div class="ob-code">#[indicator(name = "My Ind", overlay = true)]\n\nplot(close, "Цена", #58a6ff, 2)</div>',
+    },
+    {
+        icon: '🚀',
+        title: 'Запуск и график',
+        desc: 'Нажми <b>Ctrl+Enter</b> чтобы проверить компиляцию. Кнопка <b>На график</b> откроет Orbityx Charts с твоим индикатором. Всё готово — создай первый проект!',
+    },
+];
+
+let obStep = 0;
+function renderOnboarding() {
+    const step = OB_STEPS[obStep];
+    const dots = document.getElementById('ob-dots');
+    dots.innerHTML = OB_STEPS.map((_, i) =>
+        `<div class="ob-dot${i === obStep ? ' active' : ''}"></div>`
+    ).join('');
+    document.getElementById('ob-icon').textContent = step.icon;
+    document.getElementById('ob-title').textContent = step.title;
+    document.getElementById('ob-desc').innerHTML = step.desc;
+    const btn = document.getElementById('ob-next');
+    btn.textContent = obStep === OB_STEPS.length - 1 ? 'Начать 🎉' : 'Далее →';
+}
+document.getElementById('ob-next').addEventListener('click', () => {
+    if (obStep < OB_STEPS.length - 1) {
+        obStep++; renderOnboarding();
+    } else {
+        closeOnboarding();
+    }
+});
+document.getElementById('ob-skip').addEventListener('click', closeOnboarding);
+function closeOnboarding() {
+    document.getElementById('onboarding').classList.remove('open');
+    localStorage.setItem('orbityx_onboarded', '1');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+const activeId = getActiveProjectId();
+const activeProj = activeId ? getProject(activeId) : null;
+
+if (activeProj) {
+    showIDE(activeProj.id);
+} else {
+    showProjects();
+}
+
+// Restore pending OrbitScript from chart page
+if (localStorage.getItem('orbitscript_dev_pending') === '1') {
+    localStorage.removeItem('orbitscript_dev_pending');
+    const src = localStorage.getItem('orbitscript_dev_src');
+    if (src) ed.value = src;
+}
+
+// Show onboarding first time
+if (!localStorage.getItem('orbityx_onboarded')) {
+    obStep = 0;
+    renderOnboarding();
+    document.getElementById('onboarding').classList.add('open');
+}
+
+log('OrbitScript Dev  ·  Ctrl+Enter = Запустить  ·  Ctrl+S = Скачать', 'ci');
+</script>
+{% endblock %}

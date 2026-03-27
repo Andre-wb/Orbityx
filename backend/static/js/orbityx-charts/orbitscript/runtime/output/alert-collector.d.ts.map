@@ -1,0 +1,1 @@
+{"version":3,"file":"alert-collector.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/runtime/output/alert-collector.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,qBAAqB,CAAC;AAEvD,wBAAgB,QAAQ,CACpB,KAAK,EAAE,MAAM,EACb,OAAO,EAAE,MAAM,EACf,QAAQ,EAAE,MAAM,EAChB,MAAM,EAAE,WAAW,EAAE,GACtB,IAAI,CAIN"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"hline-collector.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/runtime/output/hline-collector.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,qBAAqB,CAAC;AAEvD,wBAAgB,QAAQ,CACpB,KAAK,EAAE,MAAM,EACb,KAAK,EAAE,MAAM,EACb,KAAK,EAAE,MAAM,EACb,KAAK,EAAE,OAAO,GAAG,QAAQ,GAAG,QAAQ,YAAW,EAC/C,MAAM,EAAE,WAAW,EAAE,GACtB,IAAI,CAIN"}

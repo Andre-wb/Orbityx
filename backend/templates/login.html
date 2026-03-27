@@ -1,62 +1,49 @@
-<!--
-  Login page template
-  Notes:
-  - Extends base.html and renders a simple login form using WTForms.
-  - Shows per-field errors and flashed messages from Flask.
-  - Comments only; no markup/logic changes.
--->
-{% extends 'base.html' %}
-<!-- Page <title> block -->
+{% extends "base.html" %}
 {% block title %}Вход | Orbityx{% endblock %}
-<!-- Main content: login form card -->
+
 {% block content %}
-
-    <!-- Card container styled via .form-container -->
-<div class="form-container">
-    <h2>Вход</h2>
-    <!-- WTForms-based login; POST to current route -->
-    <form method="POST">
-            <!-- CSRF and hidden fields -->
-        {{ form.hidden_tag() }}
-
-            <!-- Credential field (email/username depending on form config) -->
-        <div class="form-group">
-            <label>{{ form.credential.label }}</label>
-            {{ form.credential(class_="form-control") }}
-                <!-- Inline validation errors for credential -->
-            {% for error in form.credential.errors %}
-            <span class="error">{{ error }}</span>
-            {% endfor %}
+<div class="form-page">
+    <div class="form-card">
+        <h2>Вход в аккаунт</h2>
+        <div class="form-error" id="err"></div>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email или имя пользователя</label>
+                <input type="text" id="credential" placeholder="email@example.com" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="form-submit" id="submit-btn">Войти</button>
+        </form>
+        <div class="form-footer">
+            Ещё нет аккаунта? <a href="/register">Зарегистрироваться</a>
         </div>
-
-            <!-- Password field -->
-        <div class="form-group">
-            <label>{{ form.password.label }}</label>
-            {{ form.password(class_="form-control") }}
-                <!-- Inline validation errors for password -->
-            {% for error in form.password.errors %}
-            <span class="error">{{ error }}</span>
-            {% endfor %}
-        </div>
-
-            <!-- Submit button -->
-        <button type="submit">Войти</button>
-    </form>
-
-    <!-- Global flashed messages (e.g., invalid credentials) -->
-    {% with messages = get_flashed_messages() %}
-        <!-- Render each flash as a list item -->
-    {% if messages %}
-    <ul class="error" style="margin-top: 15px; padding-left: 20px;">
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-
-    <!-- Registration link for new users -->
-    <p class="log-subtext"> Ещё нет аккаунта? <a href="{{ url_for('main.register_user') }}" class="login-link"> Зарегистрироваться </a></p>
+    </div>
 </div>
-
+<script>
+document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = document.getElementById('err');
+    const btn = document.getElementById('submit-btn');
+    err.style.display = 'none'; btn.disabled = true; btn.textContent = 'Входим...';
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            credentials: 'include',
+            body: JSON.stringify({ credential: document.getElementById('credential').value, password: document.getElementById('password').value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Ошибка входа');
+        localStorage.setItem('access_token', data.access_token);
+        const next = new URLSearchParams(location.search).get('next') || '/chart';
+        window.location.href = next;
+    } catch(ex) {
+        err.textContent = ex.message; err.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Войти';
+    }
+});
+</script>
 {% endblock %}

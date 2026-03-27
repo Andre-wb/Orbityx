@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../../src/orbitscript/runtime/interpreter/index.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,WAAW,EAAE,MAAM,kBAAkB,CAAC;AAE/C,OAAO,EAAE,WAAW,EAAE,MAAM,kBAAkB,CAAC;AAE/C;;GAEG;AACH,MAAM,UAAU,SAAS,CACrB,OAAgB,EAChB,OAAiB,EACjB,MAA6B;IAE7B,OAAO,IAAI,WAAW,EAAE,CAAC,SAAS,CAAC,OAAO,EAAE,OAAO,EAAE,MAAM,CAAC,CAAC;AACjE,CAAC"}

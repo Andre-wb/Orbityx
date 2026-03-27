@@ -1,50 +1,80 @@
-<!--
-  Profile page template
-  Notes:
-  - Extends base.html and shows user's avatar (image or fallback initial).
-  - Provides a form to upload a new avatar (multipart/form-data).
-  - Comments only; no markup/logic changes.
--->
-{% extends 'base.html' %}
-<!-- Page <title> block -->
+{% extends "base.html" %}
 {% block title %}Профиль | Orbityx{% endblock %}
-<!-- Main content: profile header, avatar display, and upload form -->
+
 {% block content %}
+<style>
+.profile-wrap { max-width: 520px; margin: 0 auto; }
+.profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; }
+.avatar-ring { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; color: #fff; margin: 0 auto 20px; }
+.avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { text-align: center; font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+.profile-email { text-align: center; color: var(--text-muted); font-size: .9rem; margin-bottom: 28px; }
+.profile-section { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px; }
+.profile-section h4 { font-size: .85rem; color: var(--text-muted); margin-bottom: 12px; }
+.upload-btn {
+    display: inline-block; padding: 9px 18px; border-radius: 8px;
+    background: var(--border); color: var(--text); cursor: pointer;
+    font-size: .85rem; border: 1px solid var(--border); transition: background .15s;
+}
+.upload-btn:hover { background: var(--accent); color: #fff; }
+.logout-btn {
+    width: 100%; padding: 10px; border-radius: 8px; background: transparent;
+    border: 1px solid rgba(239,68,68,.4); color: var(--red); font-size: .9rem;
+    cursor: pointer; margin-top: 20px; transition: background .15s;
+}
+.logout-btn:hover { background: rgba(239,68,68,.1); }
+</style>
 
-    <!-- Container for profile section -->
-<div class="profile-container">
-    <h2>Профиль</h2>
-        <!-- Username (display only) -->
-    <h3>{{ user.username }}</h3>
-        <!-- Avatar area: image if present, otherwise a colored initial -->
-    <div class="avatar-display">
-            <!-- If user uploaded an avatar, render it via Flask route -->
-        {% if user.avatar %}
-            <!-- Avatar image served by main.get_avatar -->
-        <img src="{{ url_for('main.get_avatar', user_id=user.id) }}" alt="Аватар" class="avatar-img">
-            <!-- Otherwise render a fallback circle with the first letter -->
-        {% else %}
-            <!-- Background color derived from username via get_color() helper -->
-        <div class="avatar-fallback" style="background-color: {{ get_color(user.username) }}">
-            {{ user.username[0] | upper }}
+<div class="profile-wrap">
+    <div class="profile-card" id="profile-card">
+        <div class="avatar-ring" id="avatar-wrap">?</div>
+        <div class="profile-name" id="uname">—</div>
+        <div class="profile-email" id="uemail">—</div>
+
+        <div class="profile-section">
+            <h4>Аватар</h4>
+            <label class="upload-btn">
+                Загрузить фото
+                <input type="file" accept="image/*" id="avatar-input" style="display:none" onchange="uploadAvatar(this)">
+            </label>
         </div>
-        {% endif %}
+
+        <button class="logout-btn" onclick="logout()">Выйти из аккаунта</button>
     </div>
-
-    <!-- Upload form (multipart) for changing avatar -->
-    <form method="POST" enctype="multipart/form-data">
-        <!-- CSRF token and hidden fields -->
-        {{ form.hidden_tag() }}
-        <div>
-            <!-- File input label (WTForms) -->
-            {{ form.avatar.label }}
-            <!-- File input control for avatar image -->
-            {{ form.avatar }}
-        </div>
-        <div>
-            <!-- Submit button -->
-            {{ form.submit }}
-        </div>
-    </form>
 </div>
+
+<script>
+const token = localStorage.getItem('access_token');
+if (!token) { window.location.href = '/login'; }
+
+async function loadProfile() {
+    try {
+        const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) throw new Error();
+        const u = await res.json();
+        document.getElementById('uname').textContent = u.username;
+        document.getElementById('uemail').textContent = u.email;
+
+        const wrap = document.getElementById('avatar-wrap');
+        const avatarUrl = '/api/auth/avatar/' + u.id;
+        const img = document.createElement('img');
+        img.src = avatarUrl;
+        img.onerror = () => { wrap.textContent = u.username[0].toUpperCase(); };
+        img.onload  = () => { wrap.innerHTML = ''; wrap.appendChild(img); };
+    } catch { window.location.href = '/login'; }
+}
+loadProfile();
+
+async function uploadAvatar(input) {
+    const file = input.files[0]; if (!file) return;
+    const fd = new FormData(); fd.append('file', file);
+    const res = await fetch('/api/auth/avatar', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+    if (res.ok) loadProfile();
+}
+
+function logout() {
+    localStorage.removeItem('access_token');
+    window.location.href = '/';
+}
+</script>
 {% endblock %}

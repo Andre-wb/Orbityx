@@ -1,45 +1,696 @@
 {% extends "base.html" %}
-
-{% block title %}BTC / Candlestick{% endblock %}
+{% block title %}График | Orbityx{% endblock %}
 
 {% block content %}
-<section class="chart-page">
+<style>
+/* ── No page scroll on chart page ── */
+html, body { overflow: hidden; }
+
+/* ── Override main wrapper so the chart fills the full viewport ── */
+main { padding: 0 !important; max-width: 100% !important; }
+
+/* ── Layout ── */
+.chart-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--nav-h));
+    background: var(--bg);
+    overflow: hidden;
+}
+
+/* ── Header bar ── */
+.chart-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+.chart-header::-webkit-scrollbar { height: 3px; }
+.chart-header::-webkit-scrollbar-track { background: transparent; }
+.chart-header::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.chart-header::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+.chart-header { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+.symbol-icon {
+    width: 30px; height: 30px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; border: 2px solid;
+    font-size: 1rem; font-weight: 700;
+}
+#symbol-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: .88rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    min-width: 148px;
+    transition: border-color .15s;
+}
+#symbol-select:focus { border-color: var(--accent); }
+.symbol-name { font-size: .88rem; font-weight: 600; white-space: nowrap; }
+
+.h-sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+.symbol-price { font-size: 1.2rem; font-weight: 700; white-space: nowrap; }
+.price-change {
+    font-size: .8rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 5px; white-space: nowrap;
+}
+.change-up  { color: var(--green); background: rgba(34,197,94,.12); }
+.change-down { color: var(--red);  background: rgba(239,68,68,.12); }
+
+.stat-item { display: flex; flex-direction: column; gap: 1px; white-space: nowrap; }
+.stat-item .stat-lbl { font-size: .65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.stat-item .stat-val { font-size: .82rem; font-weight: 600; }
+.stat-badge { font-size: .8rem; font-weight: 600; padding: 2px 7px; border-radius: 5px; }
+.badge-up { color: var(--green); background: rgba(34,197,94,.12); }
+.badge-dn { color: var(--red);   background: rgba(239,68,68,.12); }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+#connection-status {
+    display: flex; align-items: center; gap: 5px;
+    font-size: .75rem; color: var(--text-muted);
+    white-space: nowrap;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+.status-dot.connected { background: var(--green); }
+.status-dot.disconnected { background: var(--red); }
+
+#frame-rate { font-size: .72rem; color: var(--text-muted); min-width: 52px; }
+
+.icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 7px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    cursor: pointer; transition: color .15s, background .15s;
+    flex-shrink: 0;
+}
+.icon-btn:hover { color: var(--text); background: var(--border); }
+
+/* ── Toolbar ── */
+#toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 12px;
+    min-height: 42px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: visible;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+#toolbar::-webkit-scrollbar { height: 3px; }
+#toolbar::-webkit-scrollbar-track { background: transparent; }
+#toolbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+#toolbar::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+.tb-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 10px;
+    border-right: 1px solid var(--border);
+    height: 100%;
+    position: relative;
+}
+.tb-group:first-child { padding-left: 0; }
+.tb-group:last-child  { border-right: none; }
+
+.tb-label {
+    font-size: .68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.tb-btns { display: flex; align-items: center; gap: 2px; }
+
+.tb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: .8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .12s, background .12s, border-color .12s;
+    white-space: nowrap;
+    line-height: 1;
+    height: 28px;
+}
+.tb-btn svg { flex-shrink: 0; }
+.tb-btn:hover {
+    color: var(--text);
+    background: rgba(255,255,255,.06);
+}
+.tb-btn.active {
+    color: var(--accent);
+    background: rgba(59,130,246,.14);
+    border-color: rgba(59,130,246,.3);
+}
+
+/* Indicator dropdown */
+.indicator-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    z-index: 300;
+    min-width: 220px;
+    max-height: 340px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+.indicator-dropdown::-webkit-scrollbar { width: 4px; }
+.indicator-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.ind-group { margin-bottom: 10px; }
+.ind-group:last-child { margin-bottom: 0; }
+.ind-group-label {
+    font-size: .68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+}
+.ind-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 2px;
+    font-size: .85rem;
+    color: var(--text);
+    cursor: pointer;
+}
+.ind-item:hover { color: var(--accent); }
+.ind-item input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+.ind-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: auto; flex-shrink: 0; }
+
+/* ── Canvas area ── */
+.chart-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+}
+#chartCanvas { width: 100%; height: 100%; display: block; }
+
+/* ── Loading overlay ── */
+#loading-indicator {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px;
+    background: var(--bg);
+    color: var(--text-muted);
+    z-index: 10;
+    font-size: .9rem;
+}
+.spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Error notification ── */
+#error-notification {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(239,68,68,.1);
+    border: 1px solid rgba(239,68,68,.35);
+    border-radius: 10px; padding: 12px 16px;
+    display: none; z-index: 20;
+    max-width: 320px;
+}
+.error-title { font-weight: 600; color: var(--red); margin-bottom: 4px; font-size: .9rem; }
+.error-message { font-size: .82rem; color: var(--text-muted); }
+</style>
+
+<div class="chart-page">
+
+    <!-- ── Header: symbol selector + live price + 24h stats ── -->
     <div class="chart-header">
-        <h1>BTC / USD</h1>
-        <div class="legend">
-            <span class="legend-label">Last price:</span>
-            <span class="symbol-price">$0.00</span>
-            <span id="frame-rate" class="frame-rate"></span>
+        <div class="symbol-icon">?</div>
+        <select id="symbol-select"></select>
+        <span class="symbol-name"></span>
+
+        <div class="h-sep"></div>
+
+        <span class="symbol-price">—</span>
+        <span class="price-change change-up">—</span>
+
+        <div class="h-sep"></div>
+
+        <div class="stat-item">
+            <span class="stat-lbl">24h High</span>
+            <span class="stat-val" id="stat-high">—</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-lbl">24h Low</span>
+            <span class="stat-val" id="stat-low">—</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-lbl">Объём</span>
+            <span class="stat-val" id="stat-volume">—</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-lbl">Рын. кап.</span>
+            <span class="stat-val" id="stat-marketcap">—</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-lbl">Изм. 24h</span>
+            <span class="stat-badge badge-up" id="stat-change">—</span>
+        </div>
+
+        <div class="header-right">
+            <div id="connection-status">
+                <span class="status-dot"></span>
+                Offline
+            </div>
+            <span id="frame-rate"></span>
+            <button class="icon-btn" id="fullscreen-btn" title="Полноэкранный режим">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="icon-btn" id="settings-btn" title="Настройки графика">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
         </div>
     </div>
-    <!-- Add error notification element -->
-    <div id="error-notification" class="error-notification" style="display:none;">
-        <div class="error-title"></div>
-        <div class="error-message"></div>
-    </div>
 
-    <!-- Toolbar with correct ID -->
-    <div id="toolbar" class="chart-toolbar"></div>
+    <!-- ── Toolbar: injected by toolbar.js ── -->
+    <div id="toolbar"></div>
 
-    <div class="chart-container">
+    <!-- ── Chart canvas ── -->
+    <div class="chart-wrap">
         <canvas id="chartCanvas"></canvas>
 
-        <!-- Add chart controls -->
-        <div class="chart-controls" style="display:none;">
-            <button id="zoom-in" class="control-btn" title="Zoom In">+</button>
-            <button id="zoom-out" class="control-btn" title="Zoom Out">-</button>
-            <button id="reset-view" class="control-btn" title="Reset View">↺</button>
+        <div id="loading-indicator">
+            <div class="spinner"></div>
+            <div>Загрузка данных…</div>
+        </div>
+
+        <div id="error-notification">
+            <div class="error-title"></div>
+            <div class="error-message"></div>
         </div>
     </div>
 
-    <!-- Loading indicator with correct ID -->
-    <div id="loading-indicator" class="loading-indicator" style="display:none;">
-        <div class="spinner"></div>
-        <div>Loading data…</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     AI AGENT — floating bubble + signal panel
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+/* ── AI Bubble ── */
+#ai-bubble {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 900;
+    transition: transform .15s;
+    border: none;
+    animation: ai-pulse 2.4s infinite;
+}
+#ai-bubble:hover { transform: scale(1.1); }
+#ai-bubble svg { pointer-events: none; }
+@keyframes ai-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(34,197,94,.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(34,197,94,.0);  }
+    100% { box-shadow: 0 0 0 0   rgba(34,197,94,.0);   }
+}
+#ai-bubble.loading { animation: none; opacity: .7; cursor: wait; }
+#ai-bubble.loading svg { animation: spin .8s linear infinite; }
+
+/* ── Signal Panel ── */
+#ai-panel {
+    position: fixed;
+    bottom: 92px;
+    right: 28px;
+    width: 300px;
+    background: var(--surface, #1a2332);
+    border: 1px solid var(--border, #2d3748);
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.6);
+    z-index: 899;
+    font-size: .82rem;
+    overflow: hidden;
+    transform: translateY(12px) scale(.97);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .2s ease, opacity .2s ease;
+}
+#ai-panel.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.ai-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border, #2d3748);
+}
+.ai-panel-title {
+    display: flex; align-items: center; gap: 7px;
+    font-weight: 700; font-size: .88rem; color: var(--text, #e2e8f0);
+}
+.ai-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+}
+.ai-close-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted, #718096); font-size: 1rem; line-height: 1;
+    padding: 2px 4px; border-radius: 4px;
+}
+.ai-close-btn:hover { color: var(--text, #e2e8f0); background: rgba(255,255,255,.06); }
+
+.ai-panel-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+/* Direction badge */
+.ai-direction {
+    display: flex; align-items: center; gap: 8px;
+}
+.ai-dir-badge {
+    padding: 3px 10px; border-radius: 6px; font-weight: 700;
+    font-size: .78rem; letter-spacing: .05em;
+}
+.ai-dir-long  { background: rgba(34,197,94,.18); color: #22c55e; border: 1px solid rgba(34,197,94,.35); }
+.ai-dir-short { background: rgba(239,68,68,.18);  color: #f87171; border: 1px solid rgba(239,68,68,.35); }
+.ai-dir-flat  { background: rgba(148,163,184,.1); color: #94a3b8; border: 1px solid rgba(148,163,184,.25); }
+
+/* Confidence bar */
+.ai-conf-row { display: flex; flex-direction: column; gap: 4px; }
+.ai-conf-label { display: flex; justify-content: space-between; color: var(--text-muted, #718096); }
+.ai-conf-track {
+    height: 5px; border-radius: 3px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+}
+.ai-conf-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+
+/* Price levels */
+.ai-levels { display: flex; flex-direction: column; gap: 5px; }
+.ai-level-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 8px; border-radius: 7px;
+    background: rgba(255,255,255,.03);
+}
+.ai-level-label { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--text-muted, #718096); }
+.ai-level-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ai-level-price { font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: .82rem; }
+
+/* Stats grid */
+.ai-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ai-stat-item { background: rgba(255,255,255,.03); border-radius: 7px; padding: 6px 8px; }
+.ai-stat-label { font-size: .68rem; color: var(--text-muted, #718096); text-transform: uppercase; letter-spacing: .05em; }
+.ai-stat-val   { font-weight: 600; margin-top: 2px; }
+
+/* Clear button */
+.ai-clear-btn {
+    background: rgba(255,255,255,.05); border: 1px solid var(--border, #2d3748);
+    color: var(--text-muted, #718096); border-radius: 7px;
+    padding: 5px 10px; cursor: pointer; font-size: .78rem; width: 100%;
+    transition: background .12s, color .12s;
+}
+.ai-clear-btn:hover { background: rgba(239,68,68,.1); color: #f87171; border-color: rgba(239,68,68,.3); }
+
+/* Error state */
+.ai-error { color: #f87171; font-size: .8rem; padding: 4px 0; }
+</style>
+
+<!-- Bubble button -->
+<button id="ai-bubble" title="AI Trading Agent">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 18L9 12L13 16L21 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="21" cy="6" r="2" fill="white"/>
+        <circle cx="3"  cy="18" r="2" fill="white"/>
+    </svg>
+</button>
+
+<!-- Signal panel -->
+<div id="ai-panel">
+    <div class="ai-panel-header">
+        <div class="ai-panel-title">
+            <span class="ai-title-dot"></span>
+            AI Trading Signal
+        </div>
+        <button class="ai-close-btn" id="ai-close">✕</button>
     </div>
-</section>
+    <div class="ai-panel-body" id="ai-panel-body">
+        <!-- filled by JS -->
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="{{ url_for('static', filename='js/orbityx-charts/main.js') }}"></script>
+<script type="module">
+// Catch top-level module errors so loading indicator is always hidden
+try {
+    const mod = await import("{{ url_for('static', filename='js/orbityx-charts/init.js') }}");
+} catch(e) {
+    console.error('[Chart] Module load error:', e);
+    const li = document.getElementById('loading-indicator');
+    if (li) li.style.display = 'none';
+    const en = document.getElementById('error-notification');
+    if (en) {
+        en.style.display = 'block';
+        const t = en.querySelector('.error-title');
+        const m = en.querySelector('.error-message');
+        if (t) t.textContent = 'Ошибка загрузки';
+        if (m) m.textContent = e.message + '. Нажмите Ctrl+Shift+R для сброса кэша.';
+    }
+}
+
+// ── AI Agent ────────────────────────────────────────────────────
+const bubble   = document.getElementById('ai-bubble');
+const panel    = document.getElementById('ai-panel');
+const panelBody= document.getElementById('ai-panel-body');
+const closeBtn = document.getElementById('ai-close');
+
+// Binance ID → slash symbol (for the API endpoint)
+function toSlashSymbol(id) {
+    // e.g. BTCUSDT → BTC/USDT
+    const quotes = ['USDT','BUSD','BTC','ETH','BNB'];
+    for (const q of quotes) {
+        if (id.endsWith(q) && id.length > q.length)
+            return id.slice(0, -q.length) + '/' + q;
+    }
+    return id;
+}
+
+function fmt(v, decimals = 2) {
+    if (v == null || isNaN(v)) return '—';
+    return Number(v).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function fmtPct(v) { return v == null ? '—' : (v > 0 ? '+' : '') + fmt(v, 2) + '%'; }
+
+// Add horizontal drawing line to chart
+function addSignalLine(engine, price, color, label) {
+    if (!engine?.drawingMgr) return;
+    const drawing = {
+        id: 'ai_' + label.replace(/\s/g,'_') + '_' + Date.now(),
+        type: 'horizontal',
+        points: [{ timestamp: Date.now(), price }],
+        color,
+        lineWidth: 1.5,
+        isDraft: false,
+        text: label + '  ' + fmt(price),
+    };
+    engine.drawingMgr._drawings.push(drawing);
+}
+
+function clearSignalLines(engine) {
+    if (!engine?.drawingMgr) return;
+    engine.drawingMgr._drawings = engine.drawingMgr._drawings.filter(
+        d => !d.id.startsWith('ai_')
+    );
+    engine.requestDraw?.();
+}
+
+function renderPanel(data) {
+    const dir = (data.direction || '').toUpperCase();
+    const dirClass = dir === 'LONG' || dir === 'UP' ? 'ai-dir-long'
+                   : dir === 'SHORT' || dir === 'DOWN' ? 'ai-dir-short'
+                   : 'ai-dir-flat';
+    const dirLabel = dir === 'UP' ? 'LONG' : dir === 'DOWN' ? 'SHORT' : (dir || 'FLAT');
+    const conf = Math.round((data.confidence ?? 0) * 100);
+    const confColor = conf >= 65 ? '#22c55e' : conf >= 45 ? '#f59e0b' : '#f87171';
+
+    const levels = [
+        { label: 'Вход',      price: data.current_price, color: '#3b82f6' },
+        { label: 'Стоп-лосс', price: data.stop_loss,     color: '#f87171' },
+        { label: 'Тейк 1',    price: data.take_profit_1,  color: '#22c55e' },
+        { label: 'Тейк 2',    price: data.take_profit_2,  color: '#16a34a' },
+        { label: 'Тейк 3',    price: data.take_profit_3,  color: '#15803d' },
+    ].filter(l => l.price);
+
+    panelBody.innerHTML = `
+        <div class="ai-direction">
+            <span class="ai-dir-badge ${dirClass}">${dirLabel}</span>
+            <span style="color:var(--text-muted);font-size:.78rem;">${data.signal ?? ''}</span>
+        </div>
+
+        <div class="ai-conf-row">
+            <div class="ai-conf-label">
+                <span>Уверенность</span>
+                <span style="font-weight:600;color:${confColor}">${conf}%</span>
+            </div>
+            <div class="ai-conf-track">
+                <div class="ai-conf-fill" style="width:${conf}%;background:${confColor}"></div>
+            </div>
+        </div>
+
+        <div class="ai-levels">
+            ${levels.map(l => `
+            <div class="ai-level-row">
+                <span class="ai-level-label">
+                    <span class="ai-level-dot" style="background:${l.color}"></span>
+                    ${l.label}
+                </span>
+                <span class="ai-level-price" style="color:${l.color}">$${fmt(l.price)}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="ai-stats">
+            <div class="ai-stat-item">
+                <div class="ai-stat-label">R/R</div>
+                <div class="ai-stat-val">${fmt(data.risk_reward, 2)}</div>
+            </div>
+            <div class="ai-stat-item">
+                <div class="ai-stat-label">RSI</div>
+                <div class="ai-stat-val">${fmt(data.rsi, 1)}</div>
+            </div>
+            <div class="ai-stat-item">
+                <div class="ai-stat-label">ADX</div>
+                <div class="ai-stat-val">${fmt(data.adx, 1)}</div>
+            </div>
+            <div class="ai-stat-item">
+                <div class="ai-stat-label">Тренд</div>
+                <div class="ai-stat-val" style="font-size:.75rem">${data.trend ?? '—'}</div>
+            </div>
+        </div>
+
+        ${data.position_sizing?.level_price ? `
+        <div style="font-size:.72rem;background:rgba(255,255,255,.04);border-radius:6px;padding:7px 9px;display:flex;flex-direction:column;gap:3px;">
+            <div style="color:var(--text-muted);">Уровень <b style="color:#e2e8f0">${data.position_sizing.level_tf ?? ''}</b>
+                · <b style="color:#fbbf24">$${fmt(data.position_sizing.level_price)}</b>
+                · сила <b style="color:#a78bfa">${fmt(data.position_sizing.level_strength, 1)}</b>
+            </div>
+            ${data.position_sizing.be_price ? `<div style="color:var(--text-muted);">БУ при 2R: <b style="color:#94a3b8">$${fmt(data.position_sizing.be_price)}</b></div>` : ''}
+            ${data.position_sizing.sl_type ? `<div style="color:var(--text-muted);">SL тип: <b style="color:#94a3b8">${data.position_sizing.sl_type}</b></div>` : ''}
+            ${data.position_sizing.filters ? `<div style="color:var(--text-muted);margin-top:2px;">${data.position_sizing.filters}</div>` : ''}
+        </div>` : ''}
+
+        <div style="font-size:.7rem;color:var(--text-muted);text-align:center;padding-top:2px;">
+            ${toSlashSymbol(window._orbityx?.activeId ?? '')} ·
+            ${window._orbityx?.timeframe ?? '1h'} ·
+            ${new Date().toLocaleTimeString()}
+        </div>
+
+        <button class="ai-clear-btn" id="ai-clear-lines">Очистить уровни</button>
+    `;
+
+    document.getElementById('ai-clear-lines')?.addEventListener('click', () => {
+        clearSignalLines(window._orbityx?.engine);
+    });
+}
+
+bubble.addEventListener('click', async () => {
+    const chart = window._orbityx;
+    if (!chart) return;
+
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) { panel.classList.remove('open'); return; }
+
+    // Map Binance ID to API symbol
+    const symbol = toSlashSymbol(chart.activeId || 'BTCUSDT');
+    // Use current TF if it's supported, else fall back to 1h
+    const supportedTf = ['1m','5m','15m','30m','1h','4h','12h','1d','1w'];
+    const tf = supportedTf.includes(chart.timeframe) ? chart.timeframe : '1h';
+
+    bubble.classList.add('loading');
+    panel.classList.add('open');
+    panelBody.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:16px 0;">
+        <div class="spinner" style="margin:0 auto 8px;width:24px;height:24px;border-width:2px;"></div>
+        Анализ рынка…
+    </div>`;
+
+    try {
+        const res = await fetch(`/api/ai/predict?symbol=${encodeURIComponent(symbol)}&timeframe=${tf}`);
+        if (!res.ok) {
+            const err = await res.text();
+            panelBody.innerHTML = `<div class="ai-error">⚠ ${err}</div>`;
+            return;
+        }
+        const data = await res.json();
+
+        // Clear previous AI lines then draw new ones
+        clearSignalLines(chart.engine);
+        if (data.current_price) addSignalLine(chart.engine, data.current_price, '#3b82f6', 'Вход');
+        if (data.stop_loss)     addSignalLine(chart.engine, data.stop_loss,     '#f87171', 'Стоп-лосс');
+        if (data.take_profit_1) addSignalLine(chart.engine, data.take_profit_1, '#22c55e', 'Тейк 1');
+        if (data.take_profit_2) addSignalLine(chart.engine, data.take_profit_2, '#16a34a', 'Тейк 2');
+        if (data.take_profit_3) addSignalLine(chart.engine, data.take_profit_3, '#15803d', 'Тейк 3');
+        chart.engine.requestDraw?.();
+
+        renderPanel(data);
+    } catch(e) {
+        panelBody.innerHTML = `<div class="ai-error">⚠ ${e.message}</div>`;
+    } finally {
+        bubble.classList.remove('loading');
+    }
+});
+
+closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+
+// Horizontal scroll via mouse wheel for header and toolbar
+['.chart-header', '#toolbar'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) {
+        el.addEventListener('wheel', e => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                el.scrollLeft += e.deltaY * 0.8;
+            }
+        }, { passive: false });
+    }
+});
+</script>
 {% endblock %}

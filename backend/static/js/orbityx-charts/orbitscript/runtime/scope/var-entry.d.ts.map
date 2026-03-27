@@ -1,0 +1,1 @@
+{"version":3,"file":"var-entry.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/runtime/scope/var-entry.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,qBAAqB,CAAC;AAEnD,MAAM,WAAW,QAAQ;IACrB,KAAK,EAAI,OAAO,CAAC;IACjB,OAAO,EAAE,OAAO,CAAC;CACpB"}

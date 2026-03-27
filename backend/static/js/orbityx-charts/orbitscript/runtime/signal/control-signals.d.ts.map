@@ -1,0 +1,1 @@
+{"version":3,"file":"control-signals.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/runtime/signal/control-signals.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,qBAAqB,CAAC;AAEnD,qBAAa,YAAY;aACO,KAAK,EAAE,OAAO;gBAAd,KAAK,EAAE,OAAO;CAC7C;AACD,qBAAa,WAAW;CAAG;AAC3B,qBAAa,cAAc;CAAG;AAC9B,qBAAa,kBAAkB;aACC,KAAK,EAAE,OAAO;gBAAd,KAAK,EAAE,OAAO;CAC7C"}

@@ -24,7 +24,7 @@
         <!-- Name cell: link to per-coin chart page with icon and symbol -->
         <td class="name_th">
             <!-- Uses coin.id to build the URL to the chart view -->
-            <a href="{{ url_for('main.introduce_page', coin_id=coin.id) }}" class="coin_name">
+            <a href="/introduce/{{ coin.id }}" class="coin_name">
                 <!-- Coin icon from API payload (20px); alt shows full name -->
                 <img src="{{ coin.image }}" alt="{{ coin.name }}" width="20" class="mr-2">
                 {{ coin.name }} ({{ coin.symbol|upper }})

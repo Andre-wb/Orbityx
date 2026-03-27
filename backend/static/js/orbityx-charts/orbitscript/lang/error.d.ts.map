@@ -1,0 +1,1 @@
+{"version":3,"file":"error.d.ts","sourceRoot":"","sources":["../../../src/orbitscript/lang/error.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,UAAU,GAAG,OAAO,GAAG,QAAQ,GAAG,WAAW,GAAG,SAAS,CAAC;AAEtE,qBAAa,gBAAiB,SAAQ,KAAK;aAGnB,IAAI,EAAE,MAAM;aACZ,MAAM,EAAE,MAAM;aACd,KAAK,EAAE,UAAU;gBAHjC,OAAO,EAAE,MAAM,EACC,IAAI,EAAE,MAAM,EACZ,MAAM,EAAE,MAAM,EACd,KAAK,EAAE,UAAU;CAKxC"}

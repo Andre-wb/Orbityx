@@ -7,11 +7,11 @@
     <a href="/currency">Криптовалюты</a>
   </div>
   <div class="binance-login">
-    {% if current_user.is_authenticated %}
+    {% if is_authenticated %}
     <a href="/profile">Профиль</a>
     {% else %}
-    <a href="{{ url_for('main.login') }}">Войти</a>
-    <a class="register-link" href="{{ url_for('main.register_user') }}">Зарегистрироваться</a>
+    <a href="/login">Войти</a>
+    <a class="register-link" href="/register">Зарегистрироваться</a>
     {% endif %}
   </div>
 </div>

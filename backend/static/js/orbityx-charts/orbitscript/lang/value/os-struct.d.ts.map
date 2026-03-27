@@ -1,0 +1,1 @@
+{"version":3,"file":"os-struct.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/lang/value/os-struct.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,YAAY,CAAC;AAE1C,MAAM,WAAW,QAAQ;IACrB,MAAM,EAAE,QAAQ,CAAC;IACjB,MAAM,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAAC;CACnC"}

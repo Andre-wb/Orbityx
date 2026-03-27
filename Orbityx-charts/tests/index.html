@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orbityx Chart Pro — Dev Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Reset ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; color-scheme: dark; }
+
+        body {
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            background: #070c14;
+            color: #c8daea;
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        /* ── Layout shell ── */
+        .app {
+            display: grid;
+            grid-template-rows: 48px auto 1fr 32px;
+            height: 100dvh;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+            background: #080e18;
+            border-bottom: 1px solid #1a2840;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .logo-mark {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #00d4ff, #0077bb);
+            border-radius: 7px;
+            display: grid; place-items: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 800;
+            color: #070c14;
+        }
+        .logo-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 15px;
+            color: #c8daea; letter-spacing: -0.3px;
+        }
+        .logo-badge {
+            font-size: 9px; padding: 1px 6px;
+            border-radius: 99px;
+            background: rgba(0,212,255,0.12);
+            color: #00d4ff;
+            border: 1px solid rgba(0,212,255,0.25);
+            letter-spacing: 0.5px;
+        }
+
+        /* Symbol select */
+        .symbol-selector {
+            display: flex;
+            align-items: center;
+        }
+        #symbol-select {
+            height: 30px;
+            padding: 0 28px 0 10px;
+            background: #0f1828;
+            color: #c8daea;
+            border: 1px solid #1a2840;
+            border-radius: 5px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            appearance: none;
+            cursor: pointer;
+            background-image: linear-gradient(45deg, transparent 50%, #5a7a9a 50%),
+            linear-gradient(135deg, #5a7a9a 50%, transparent 50%);
+            background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+            background-size: 5px 5px;
+            background-repeat: no-repeat;
+            min-width: 160px;
+            transition: border-color 0.15s;
+        }
+        #symbol-select:focus { outline: none; border-color: #00d4ff; }
+
+        .header-sep {
+            width: 1px; height: 20px;
+            background: #1a2840;
+            margin: 0 4px;
+        }
+
+        /* Live price display */
+        #live-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 19px; font-weight: 700;
+            color: #e8f4ff;
+            letter-spacing: -0.5px;
+        }
+        #price-change {
+            font-size: 11px; font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 99px;
+        }
+        .change-up { color: #00ff8c; background: rgba(0,255,140,0.1); }
+        .change-down { color: #ff2d55; background: rgba(255,45,85,0.1); }
+
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hdr-btn {
+            height: 28px; min-width: 28px; padding: 0 8px;
+            background: #0f1828;
+            border: 1px solid #1a2840;
+            border-radius: 5px;
+            color: #5a7a9a;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            display: flex; align-items: center; gap: 5px;
+            transition: all 0.15s;
+        }
+        .hdr-btn:hover { background: rgba(0,212,255,0.1); border-color: #00d4ff; color: #00d4ff; }
+        #theme-toggle { font-size: 14px; }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex;
+            gap: 0;
+            background: #060a12;
+            border-bottom: 1px solid #1a2840;
+            overflow-x: auto;
+        }
+        .stat {
+            padding: 5px 16px;
+            border-right: 1px solid #1a2840;
+            flex-shrink: 0;
+        }
+        .stat-label {
+            font-size: 9px; letter-spacing: 0.8px;
+            color: #3a5065; margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+        .stat-value {
+            font-size: 12px; font-weight: 500;
+            color: #c8daea;
+        }
+        #stat-high .stat-value  { color: #00ff8c; }
+        #stat-low .stat-value   { color: #ff2d55; }
+        #stat-change .stat-value { font-size: 11px; }
+
+        /* ── Main area ── */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            min-height: 0;
+        }
+
+        /* ── Chart section ── */
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-right: 1px solid #1a2840;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background: #080e18;
+            border-bottom: 1px solid #1a2840;
+        }
+
+        /* ── These styles are consumed by toolbar.ts ── */
+        .tb-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: relative;
+        }
+        .tb-group:not(:last-child)::after {
+            content: '';
+            width: 1px; height: 18px;
+            background: #1a2840;
+            margin: 0 3px;
+        }
+        .tb-label {
+            font-size: 9px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.6px;
+            color: #3a5065;
+        }
+        .tb-btns { display: flex; gap: 2px; }
+        .tb-btn {
+            height: 26px; padding: 0 7px;
+            display: inline-flex; align-items: center; gap: 4px;
+            border-radius: 4px;
+            background: transparent;
+            color: #5a7a9a;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px; font-weight: 500;
+            transition: all 0.12s;
+            white-space: nowrap;
+        }
+        .tb-btn svg { width: 13px; height: 13px; }
+        .tb-btn:hover { background: rgba(0,212,255,0.08); color: #c8daea; border-color: #1a2840; }
+        .tb-btn.active {
+            background: rgba(0,212,255,0.14);
+            color: #00d4ff;
+            border-color: rgba(0,212,255,0.35);
+        }
+
+        .indicator-dropdown {
+            position: absolute;
+            top: calc(100% + 4px); left: 0;
+            z-index: 200;
+            min-width: 200px;
+            background: #0d1624;
+            border: 1px solid #1a2840;
+            border-radius: 7px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            padding: 6px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .ind-group { margin-bottom: 6px; }
+        .ind-group-label {
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.6px;
+            color: #3a5065;
+            padding: 3px 6px 2px;
+        }
+        .ind-item {
+            display: flex; align-items: center; gap: 7px;
+            padding: 5px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px; color: #5a7a9a;
+            transition: all 0.1s;
+        }
+        .ind-item:hover { background: rgba(0,212,255,0.07); color: #c8daea; }
+        .ind-item input[type="checkbox"] { accent-color: #00d4ff; }
+        .ind-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Chart canvas container */
+        .chart-container {
+            position: relative;
+            flex: 1;
+            background: #070c14;
+            overflow: hidden;
+        }
+        .chart-container canvas {
+            display: block;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* ── Legend / sidebar ── */
+        .legend-panel {
+            display: flex;
+            flex-direction: column;
+            background: #080e18;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid #1a2840;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: #080e18;
+            z-index: 10;
+        }
+        .panel-header h2 {
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.6px;
+            color: #3a5065;
+        }
+
+        .panel-content {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* Symbol block */
+        .symbol-info {
+            display: grid;
+            grid-template-columns: 38px 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+        .symbol-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: #0f1828;
+            border: 1px solid #1a2840;
+            display: grid; place-items: center;
+            font-size: 16px; font-weight: 700;
+        }
+        .symbol-details { display: flex; flex-direction: column; gap: 3px; }
+        .symbol-name { font-size: 11px; color: #5a7a9a; }
+        .symbol-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px; font-weight: 700;
+            color: #e8f4ff; letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .price-change { font-size: 11px; }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .stat-card {
+            background: #0f1828;
+            border: 1px solid #1a2840;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        .stat-card .stat-label {
+            font-size: 9px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px;
+            color: #3a5065; margin-bottom: 3px;
+        }
+        .stat-card .stat-value {
+            font-size: 13px; font-weight: 500;
+            color: #c8daea;
+        }
+        .stat-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 600;
+        }
+        .badge-up { background: rgba(0,255,140,0.1); color: #00ff8c; }
+        .badge-dn { background: rgba(255,45,85,0.1); color: #ff2d55; }
+
+        .section-title {
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: #3a5065;
+            margin-bottom: 6px;
+        }
+
+        /* ── Status bar ── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            border-top: 1px solid #1a2840;
+            background: #060a12;
+            font-size: 10px;
+            color: #3a5065;
+        }
+
+        .status-left, .status-right {
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        #connection-status {
+            display: flex; align-items: center; gap: 5px;
+        }
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #f59e0b;
+        }
+        .status-dot.connected {
+            background: #00ff8c;
+            box-shadow: 0 0 0 3px rgba(0,255,140,0.15);
+            animation: pulse-dot 2s ease infinite;
+        }
+        .status-dot.disconnected { background: #ff2d55; }
+        @keyframes pulse-dot {
+            0%,100% { box-shadow: 0 0 0 3px rgba(0,255,140,0.15); }
+            50%      { box-shadow: 0 0 0 5px transparent; }
+        }
+
+        /* ── Loading ── */
+        #loading-indicator {
+            position: fixed; inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 14px;
+            background: rgba(7,12,20,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 2px solid #1a2840;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 11px; color: #5a7a9a; letter-spacing: 1px; }
+
+        /* ── Error ── */
+        #error-notification {
+            position: fixed;
+            top: 14px; right: 14px;
+            z-index: 2100;
+            max-width: 380px;
+            background: rgba(255,45,85,0.15);
+            border: 1px solid rgba(255,45,85,0.4);
+            color: #ff2d55;
+            padding: 10px 34px 10px 12px;
+            border-radius: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .error-title { font-weight: 600; font-size: 12px; }
+        .error-message { font-size: 11px; opacity: 0.85; }
+        .error-dismiss {
+            position: absolute; right: 8px; top: 6px;
+            background: transparent; border: 0;
+            color: rgba(255,45,85,0.7); font-size: 18px;
+            cursor: pointer; line-height: 1;
+        }
+
+        /* ── Tooltip ── */
+        .chart-tooltip {
+            position: fixed;
+            z-index: 500;
+            pointer-events: none;
+            min-width: 170px;
+            background: rgba(8,14,24,0.95);
+            border: 1px solid #1a2840;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            padding: 9px 11px;
+            backdrop-filter: blur(8px);
+            display: none;
+        }
+        .tt-date {
+            font-size: 9px; color: #3a5065;
+            margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+        }
+        .tt-row {
+            display: flex; justify-content: space-between; align-items: baseline;
+            gap: 10px; font-size: 11px; line-height: 1.7;
+        }
+        .tt-lbl { color: #3a5065; font-size: 9px; font-weight: 600; text-transform: uppercase; min-width: 20px; }
+        .tt-up  { color: #00ff8c; }
+        .tt-dn  { color: #ff2d55; }
+        .tt-volume-section { border-top: 1px solid #1a2840; padding-top: 6px; margin-top: 4px; }
+        .tt-vol-bar { height: 3px; background: #1a2840; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .tt-vol-fill { height: 100%; border-radius: 2px; }
+
+        /* ── Modal ── */
+        #settings-modal {
+            position: fixed; inset: 0;
+            display: none;
+            align-items: center; justify-content: center;
+            background: rgba(7,12,20,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2050;
+        }
+        .modal-content {
+            width: min(480px, 92vw);
+            background: #0d1624;
+            border: 1px solid #1a2840;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #1a2840;
+        }
+        .modal-header h2 { font-size: 14px; font-weight: 600; color: #c8daea; }
+        .modal-close { background: transparent; border: 0; color: #5a7a9a; font-size: 20px; cursor: pointer; }
+        .modal-body { padding: 14px; }
+
+        /* ── Misc ── */
+        #last-update { color: #3a5065; }
+        #frame-rate  { color: #3a5065; font-size: 10px; }
+        #fullscreen-btn, #settings-btn { font-size: 13px; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1a2840; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ── Header ── -->
+    <header class="header">
+        <a class="logo" href="#">
+            <div class="logo-mark">O</div>
+            <span class="logo-name">Orbityx</span>
+            <span class="logo-badge">PRO</span>
+        </a>
+
+        <div class="header-sep"></div>
+
+        <div class="symbol-selector">
+            <select id="symbol-select"></select>
+        </div>
+
+        <div class="header-sep"></div>
+
+        <span id="live-price">—</span>
+        <span id="price-change" class="change-up"></span>
+
+        <div class="header-right">
+            <span id="last-update"></span>
+            <button id="theme-toggle"   class="hdr-btn" title="Toggle theme">☀️</button>
+            <button id="fullscreen-btn" class="hdr-btn" title="Fullscreen">⛶</button>
+            <button id="settings-btn"   class="hdr-btn" title="Settings">⚙</button>
+        </div>
+    </header>
+
+    <!-- ── 24h Stats bar ── -->
+    <div class="stats-bar">
+        <div class="stat" id="stat-high-bar">
+            <div class="stat-label">24H HIGH</div>
+            <div class="stat-value" id="stat-high-val">—</div>
+        </div>
+        <div class="stat" id="stat-low-bar">
+            <div class="stat-label">24H LOW</div>
+            <div class="stat-value" id="stat-low-val">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">24H VOL</div>
+            <div class="stat-value" id="stat-vol-top">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">CHANGE</div>
+            <div class="stat-value" id="stat-chg-top">—</div>
+        </div>
+    </div>
+
+    <!-- ── Main ── -->
+    <main class="main">
+
+        <!-- Chart section -->
+        <section class="chart-section">
+            <div id="toolbar"></div>
+
+            <div class="chart-container" id="chart-wrap">
+                <canvas id="chartCanvas"></canvas>
+
+                <!-- Loading -->
+                <div id="loading-indicator" style="display:none;">
+                    <div class="spinner"></div>
+                    <div class="loading-text">LOADING DATA…</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Legend sidebar -->
+        <aside class="legend-panel">
+            <div class="panel-header">
+                <h2>Market</h2>
+            </div>
+            <div class="panel-content">
+
+                <!-- Symbol block -->
+                <div class="symbol-info">
+                    <div class="symbol-icon">
+                        <span style="color:#f7931a">₿</span>
+                    </div>
+                    <div class="symbol-details">
+                        <div class="symbol-name">—</div>
+                        <div class="symbol-price">—</div>
+                        <div class="price-change change-up">—</div>
+                    </div>
+                </div>
+
+                <!-- Stats grid -->
+                <div>
+                    <div class="section-title">24h Statistics</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">High</div>
+                            <div class="stat-value" id="stat-high">—</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Low</div>
+                            <div class="stat-value" id="stat-low">—</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Volume</div>
+                            <div class="stat-value" id="stat-volume">—</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Market Cap</div>
+                            <div class="stat-value" id="stat-marketcap">N/A</div>
+                        </div>
+                        <div class="stat-card" style="grid-column:1/-1">
+                            <div class="stat-label">Change 24h</div>
+                            <span class="stat-badge badge-up" id="stat-change">—</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </main>
+
+    <!-- ── Status bar ── -->
+    <footer class="status-bar">
+        <div class="status-left">
+            <div id="connection-status">
+                <span class="status-dot"></span>
+                <span>Offline</span>
+            </div>
+            <span id="last-update"></span>
+        </div>
+        <div class="status-right">
+            <span id="frame-rate"></span>
+            <span>Orbityx Chart Pro</span>
+        </div>
+    </footer>
+
+</div><!-- .app -->
+
+<!-- Error toast -->
+<div id="error-notification">
+    <div class="error-title"></div>
+    <div class="error-message"></div>
+    <button class="error-dismiss">×</button>
+</div>
+
+<!-- Settings modal -->
+<div id="settings-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Settings</h2>
+            <button class="modal-close">×</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#5a7a9a; font-size:12px;">Chart settings coming soon.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── App entry point ── -->
+<script type="module" src="./app.ts"></script>
+</body>
+</html>

@@ -15,7 +15,6 @@
 }
 html {
     overflow-x: hidden;
-    overflow-y: hidden;
 }
 html, body {
     margin: 0;
@@ -66,13 +65,6 @@ html, body {
 body {
     background: var(--border-color);
     transition: background 0.4s ease-in-out;
-    font-weight: 600;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    gap: 10px;
 }
 
 .window {

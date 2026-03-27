@@ -1,0 +1,1 @@
+{"version":3,"file":"os-enum.d.ts","sourceRoot":"","sources":["../../../../src/orbitscript/lang/value/os-enum.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,MAAM,YAAY,CAAC;AAE1C,MAAM,WAAW,MAAM;IACnB,MAAM,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;IACf,SAAS,EAAE,MAAM,CAAC;IAClB,MAAM,EAAE,OAAO,EAAE,CAAC;CACrB"}

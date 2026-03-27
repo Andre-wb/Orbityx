@@ -1,17 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "ES6",
-    "outDir": "./app/static/js",
-    "rootDir": "./app/static/ts",
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM"],
+    "outDir": "./frontend/dist/js",
+    "rootDir": "./frontend/src",
     "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["app/static/ts/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["frontend/src/**/*.ts"],
+  "exclude": ["node_modules", "frontend/dist"]
 }

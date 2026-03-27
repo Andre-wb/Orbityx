@@ -1,14 +1,155 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Orbityx{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #141720;
+            --border: #1e2230;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text: #e2e8f0;
+            --text-muted: #64748b;
+            --green: #22c55e;
+            --red: #ef4444;
+            --nav-h: 60px;
+        }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; }
+
+        /* ── NAV ── */
+        .navbar {
+            position: sticky; top: 0; z-index: 100;
+            height: var(--nav-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center;
+            padding: 0 24px; gap: 32px;
+        }
+        .navbar .logo {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 1.15rem; font-weight: 700; color: var(--text);
+            text-decoration: none; letter-spacing: -.01em;
+        }
+        .navbar .logo svg { flex-shrink: 0; }
+        .nav-links { display: flex; gap: 4px; flex: 1; }
+        .nav-links a {
+            padding: 6px 14px; border-radius: 8px;
+            color: var(--text-muted); text-decoration: none;
+            font-size: .9rem; transition: color .15s, background .15s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--border); }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-right a.btn {
+            padding: 7px 16px; border-radius: 8px;
+            background: var(--accent); color: #fff;
+            text-decoration: none; font-size: .85rem; font-weight: 600;
+            transition: background .15s;
+        }
+        .nav-right a.btn:hover { background: var(--accent-hover); }
+        .nav-right a.btn-ghost {
+            background: transparent; border: 1px solid var(--border); color: var(--text);
+        }
+        .nav-right a.btn-ghost:hover { background: var(--border); }
+
+        /* Theme toggle */
+        .theme-switch { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-muted); }
+        .theme-switch input { display: none; }
+        .theme-toggle-track {
+            width: 36px; height: 20px; border-radius: 10px;
+            background: var(--border); position: relative; transition: background .2s;
+        }
+        .theme-toggle-thumb {
+            position: absolute; top: 2px; left: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--text-muted); transition: left .2s, background .2s;
+        }
+        input:checked ~ .theme-toggle-track { background: var(--accent); }
+        input:checked ~ .theme-toggle-track .theme-toggle-thumb { left: 18px; background: #fff; }
+
+        /* ── MAIN ── */
+        main { padding: 32px 24px; max-width: 1400px; margin: 0 auto; }
+
+        /* ── FORMS ── */
+        .form-page { min-height: calc(100vh - var(--nav-h)); display: flex; align-items: center; justify-content: center; }
+        .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 420px; }
+        .form-card h2 { font-size: 1.5rem; margin-bottom: 28px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: .85rem; color: var(--text-muted); margin-bottom: 6px; }
+        .form-group input {
+            width: 100%; padding: 10px 14px; border-radius: 8px;
+            background: var(--bg); border: 1px solid var(--border);
+            color: var(--text); font-size: .95rem; outline: none;
+            transition: border-color .15s;
+        }
+        .form-group input:focus { border-color: var(--accent); }
+        .form-submit {
+            width: 100%; padding: 11px; border-radius: 8px;
+            background: var(--accent); color: #fff; font-size: 1rem; font-weight: 600;
+            border: none; cursor: pointer; margin-top: 8px; transition: background .15s;
+        }
+        .form-submit:hover { background: var(--accent-hover); }
+        .form-footer { text-align: center; margin-top: 20px; font-size: .88rem; color: var(--text-muted); }
+        .form-footer a { color: var(--accent); text-decoration: none; }
+        .form-error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); border-radius: 8px; padding: 10px 14px; font-size: .85rem; color: var(--red); margin-bottom: 16px; display: none; }
+        .form-success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); border-radius: 8px; padding: 10px 14px; font-size: .85rem; color: var(--green); margin-bottom: 16px; display: none; }
+    </style>
 </head>
 <body>
+
+<nav class="navbar">
+    <a class="logo" href="/">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="3,18 9,12 13,16 21,6" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Orbityx
+    </a>
+    <div class="nav-links">
+        <a href="/" id="nav-home">Главная</a>
+        <a href="/market" id="nav-market">Рынок</a>
+        <a href="/chart" id="nav-chart">График</a>
+        <a href="/dev" id="nav-dev">Dev</a>
+    </div>
+    <div class="nav-right" id="nav-auth">
+        <a href="/login" class="btn btn-ghost">Войти</a>
+        <a href="/register" class="btn">Регистрация</a>
+    </div>
+</nav>
+
+<main>
 {% block content %}{% endblock %}
+</main>
+
+{% block scripts %}{% endblock %}
+
+<script>
+    // Highlight active nav link
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        if (a.getAttribute('href') === path) a.classList.add('active');
+    });
+
+    // Show profile/logout links if logged in
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        const nav = document.getElementById('nav-auth');
+        nav.innerHTML = `
+            <a href="/profile" class="btn btn-ghost">Профиль</a>
+            <a href="#" class="btn btn-ghost" id="logout-btn">Выйти</a>
+        `;
+        document.getElementById('logout-btn').addEventListener('click', async e => {
+            e.preventDefault();
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+        });
+    }
+</script>
 </body>
 </html>
